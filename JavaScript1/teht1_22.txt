@@ -1,0 +1,17 @@
+Seuraavat lauseet ovat tosia:
+Lause A on ”Pekka on vakosamettihousuinen mies”.
+Lause B on ”Rauni ei ole vihainen”.
+Lause C on ”Harri on yhdeksän”.
+Lause D on ”Sataa”.
+&& = JA
+|| = TAI
+!=EI
+
+
+Ovatko seuraavat väittämät tosia?
+a) (!D || !C && !B) ei tosi
+b) (D && !B || !A) ei tosi
+c) (!D || A) tosi
+d) (B && !A) ei tosi
+e) (D && !B || !A) || (!D || A) tosi
+f) (!(!C && !B) && (!D || B)) tosi
