@@ -1,6 +1,6 @@
 import './App.css';
 import Tentti from './Tentti'
-import React, {useState} from 'react';
+import React, {useState, useReducer} from 'react';
 
 const App = () => {
   const[tenttiNumero, setTenttiNumero] = useState(0);
@@ -25,12 +25,28 @@ const App = () => {
 
   let _tentit = [tentti1, tentti2]
   
-  const[tentit, settentti] = useState(_tentit);
+  const[tentit, dispatch] = useReducer(reducer, _tentit);
 
-  const KysymysMuuttui = (uusiKysymys, kysymysIndex, tentti) => {
-    const tentitKopio = JSON.parse(JSON.stringify(tentit))
+  /* const KysymysMuuttui = (uusiKysymys, kysymysIndex, tentti) => {
+    const tentitKopio = {...tentit} // JSON.parse(JSON.stringify(tentit)) 
     tentitKopio[tenttiNumero].kysymykset[kysymysIndex].kysymys = uusiKysymys
-    settentti(tentitKopio);
+    setTentit(tentitKopio);
+  } */
+
+  function reducer(state, action) {
+    switch (action.type) {
+/*        case 'VASTAUS_MUUTTUI':
+        const uusiVastaus = action.payload.vastaus
+        const vastauksetKopio = 
+        return {...state, nimi: action.payload.nimi}; */
+      case 'KYSYMYS_MUUTTUI':
+        let uusiKysymys = action.payload.kysymys
+        let tentitKopio = {...state}
+        tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex].kysymys = uusiKysymys      
+        return tentitKopio
+      default:
+        throw new Error("Reduceriin tultiin oudosti.");
+    }
   }
 
   return (
@@ -42,7 +58,7 @@ const App = () => {
       </div>
       
       <div className='Body'>
-        <div> <Tentti tentti = {tentit[tenttiNumero]} kysymysMuuttuiHandler = {KysymysMuuttui}/> </div> 
+        <div> <Tentti tentti = {tentit[tenttiNumero]} dispatch = {dispatch}/> </div> 
       </div>
     </div>
   );
