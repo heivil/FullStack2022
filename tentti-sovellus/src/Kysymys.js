@@ -11,7 +11,7 @@ const Kysymys = (props) => {
         tentti: props.tentti
       }})}} value = {props.kysymys.kysymys}/>
       <div> {props.kysymys.kysymys} </div>
-            {props.kysymys.vastaukset.map((vastaus, index) => <div key={index}> <Vastaus vastaus = {vastaus}/> </div>)}
+            {props.kysymys.vastaukset.map((vastaus, index) => <div key={index}> <Vastaus vastaus = {vastaus} dispatch = {props.dispatch} kysymysIndex = {props.kysymysIndex} vastausIndex = {index}/> </div>)}
     </div>
   );
 }

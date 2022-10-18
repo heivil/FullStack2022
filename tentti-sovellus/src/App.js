@@ -35,15 +35,16 @@ const App = () => {
 
   function reducer(state, action) {
     switch (action.type) {
-/*        case 'VASTAUS_MUUTTUI':
+       case 'VASTAUS_MUUTTUI':
         const uusiVastaus = action.payload.vastaus
-        const vastauksetKopio = 
-        return {...state, nimi: action.payload.nimi}; */
+        const tentitKopio1 = {...state} 
+        tentitKopio1[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex] = uusiVastaus
+        return {...state, nimi: action.payload.nimi};
       case 'KYSYMYS_MUUTTUI':
-        let uusiKysymys = action.payload.kysymys
-        let tentitKopio = {...state}
-        tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex].kysymys = uusiKysymys      
-        return tentitKopio
+        const uusiKysymys = action.payload.kysymys
+        const tentitKopio2 = {...state}
+        tentitKopio2[tenttiNumero].kysymykset[action.payload.kysymysIndex].kysymys = uusiKysymys      
+        return tentitKopio2
       default:
         throw new Error("Reduceriin tultiin oudosti.");
     }
