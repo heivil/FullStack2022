@@ -19,6 +19,8 @@ const Kysymys = (props) => {
             </div>)}
             <img className="Isompi-roskis-nappi" src={trash} alt="Poista kysymys" onClick={(event)=>
             {props.dispatch({type: 'POISTA_KYSYMYS', payload: {kysymysIndex: props.kysymysIndex}})}}/>
+            <img className="Plus-nappi" src={plus} alt="Lisää vastausvaihtoehto" onClick={(event)=>
+            {props.dispatch({type: 'LISÄÄ_VASTAUS', payload: {kysymysIndex: props.kysymysIndex}})}}/>
     </div>
   );
 }

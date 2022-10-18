@@ -27,23 +27,23 @@ const App = () => {
   
   const[tentit, dispatch] = useReducer(reducer, _tentit);
 
-  /* const KysymysMuuttui = (uusiKysymys, kysymysIndex, tentti) => {
+  /* const KysymysMuuttui = (muutettuKysymys, kysymysIndex, tentti) => {
     const tentitKopio = {...tentit} // JSON.parse(JSON.stringify(tentit)) 
-    tentitKopio[tenttiNumero].kysymykset[kysymysIndex].kysymys = uusiKysymys
+    tentitKopio[tenttiNumero].kysymykset[kysymysIndex].kysymys = muutettuKysymys
     setTentit(tentitKopio);
   } */
 
   function reducer(state, action) {
     switch (action.type) {
        case 'VASTAUS_MUUTTUI':
-        const uusiVastaus = action.payload.vastaus
+        const muutettuVastaus = action.payload.vastaus
         const tentitKopio1 = {...state} 
-        tentitKopio1[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex] = uusiVastaus
+        tentitKopio1[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex] = muutettuVastaus
         return {...state, nimi: action.payload.nimi};
       case 'KYSYMYS_MUUTTUI':
-        const uusiKysymys = action.payload.kysymys
+        const muutettuKysymys = action.payload.kysymys
         const tentitKopio2 = {...state}
-        tentitKopio2[tenttiNumero].kysymykset[action.payload.kysymysIndex].kysymys = uusiKysymys      
+        tentitKopio2[tenttiNumero].kysymykset[action.payload.kysymysIndex].kysymys = muutettuKysymys      
         return tentitKopio2;
       case 'POISTA_KYSYMYS':
         const tentitKopio3 = {...state}
@@ -57,6 +57,16 @@ const App = () => {
           vastaus !== tentitKopio4[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
         tentitKopio4[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset = vastauksetKopio      
         return tentitKopio4;
+      case 'LISÄÄ_KYSYMYS':
+        const tentitKopio5 = {...state}
+        const uusiKysymys = {kysymys: "Uusi kysymys", vastaukset: ["Uusi vastaus"]}
+        tentitKopio5[tenttiNumero].kysymykset.push(uusiKysymys)
+        return tentitKopio5;
+      case 'LISÄÄ_VASTAUS':
+        const tentitKopio6 = {...state}
+        const uusiVastaus = "Uusi vastaus"; 
+        tentitKopio6[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)
+        return tentitKopio6;
       default:
         throw new Error("Reduceriin tultiin oudosti.");
     }
