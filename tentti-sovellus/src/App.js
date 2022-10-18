@@ -1,5 +1,5 @@
 import './App.css';
-import Tentti from './Tentti'
+import Tentti from './Tentti';
 import React, {useState, useReducer} from 'react';
 
 const App = () => {
@@ -44,7 +44,19 @@ const App = () => {
         const uusiKysymys = action.payload.kysymys
         const tentitKopio2 = {...state}
         tentitKopio2[tenttiNumero].kysymykset[action.payload.kysymysIndex].kysymys = uusiKysymys      
-        return tentitKopio2
+        return tentitKopio2;
+      case 'POISTA_KYSYMYS':
+        const tentitKopio3 = {...state}
+        const kysymyksetKopio = tentitKopio3[tenttiNumero].kysymykset.filter(kysymys => 
+          kysymys !== tentitKopio3[tenttiNumero].kysymykset[action.payload.kysymysIndex])
+        tentitKopio3[tenttiNumero].kysymykset = kysymyksetKopio      
+        return tentitKopio3;
+      case 'POISTA_VASTAUS':
+        const tentitKopio4 = {...state}
+        const vastauksetKopio = tentitKopio4[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset.filter(vastaus =>
+          vastaus !== tentitKopio4[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
+        tentitKopio4[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset = vastauksetKopio      
+        return tentitKopio4;
       default:
         throw new Error("Reduceriin tultiin oudosti.");
     }
