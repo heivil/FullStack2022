@@ -1,6 +1,10 @@
-.Body {
+.Main-content {
   text-align: left;
   margin: 10px 200px;
+}
+
+.Ruutu{
+  background-image: url(BG.png);
 }
 
 .App-header {
@@ -32,19 +36,24 @@
   font-weight: normal;
 }
 
-.Plus-nappi{
+.Nappi{
   height: 20px;
   width: 20px;
+  opacity: 0.5;
 }
 
-.Roskis-nappi{
-  height: 20px;
-  width: 20px;
+.Nappi:hover{
+  opacity: 1;
 }
 
-.Isompi-roskis-nappi{
+.Isompi-nappi{
   height: 50px;
   width: 50px;
   float:right;
   margin: 0px 0px 0px auto;
+  opacity: 0.5;
+}
+
+.Isompi-nappi:hover{
+  opacity: 1;
 }
