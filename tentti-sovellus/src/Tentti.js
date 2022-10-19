@@ -8,7 +8,7 @@ const Tentti = (props) => {
       <div>Kysymykset: </div>
       <div>{props.tentti.kysymykset.map((kysymys, index) => 
         <Kysymys key = {index} kysymys={kysymys} dispatch = {props.dispatch} kysymysIndex = {index} tentti = {props.tentti}/>)} 
-        <img className='Plus-nappi' src={plus} alt="Lisää kysymys" onClick={(event) => {props.dispatch({type: 'LISÄÄ_KYSYMYS'})}} />
+        <img className='Nappi' src={plus} alt="Lisää kysymys" onClick={(event) => {props.dispatch({type: 'LISÄÄ_KYSYMYS'})}} />
       </div>
     </div>
   );

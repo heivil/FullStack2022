@@ -37,7 +37,7 @@ const App = () => {
         const muutettuVastaus = action.payload.vastaus
         const tentitKopio1 = JSON.parse(JSON.stringify({...state}))
         tentitKopio1[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex] = muutettuVastaus
-        return {...state, nimi: action.payload.nimi};
+        return tentitKopio1;
       case 'KYSYMYS_MUUTTUI':
         const muutettuKysymys = action.payload.kysymys
         const tentitKopio2 = JSON.parse(JSON.stringify({...state}))
@@ -72,14 +72,14 @@ const App = () => {
   }
 
   return (
-    <div>
+    <div className='Ruutu'>
       <div className='App-header'>
         <div className='Single-item'> Tenttien määrä: {tentit.length} </div>
         <button className='Single-item' onClick = {() => setTenttiNumero(0)}>{tentti1.nimi} </button>
         <button className='Single-item' onClick = {() => setTenttiNumero(1)}>{tentti2.nimi} </button>
       </div>
       
-      <div className='Body'>
+      <div className='Main-content'>
         <div> <Tentti tentti = {tentit[tenttiNumero]} dispatch = {dispatch}/> </div> 
       </div>
     </div>

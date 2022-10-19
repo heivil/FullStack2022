@@ -12,7 +12,7 @@ const Vastaus = (props) => {
           kysymysIndex: props.kysymysIndex
         }})}} value = {props.vastaus}/>
       </div>
-      <img className='Roskis-nappi' src={trash} alt="Poista vastausvaihtoehto" onClick={(event) => { 
+      <img className='Nappi' src={trash} alt="Poista vastausvaihtoehto" onClick={(event) => { 
         props.dispatch({type: 'POISTA_VASTAUS', payload: {kysymysIndex: props.kysymysIndex, vastausIndex: props.vastausIndex}})}}
       />
     </div>
