@@ -5,7 +5,8 @@ import plus from './plus.png'
 const Kysymys = (props) => {
   return (
     <div className="Kysymys">
-      <input type="text" onChange={(event)=>{props.dispatch({type: 'KYSYMYS_MUUTTUI', 
+      {props.moodi ? <>
+        <input type="text" onChange={(event)=>{props.dispatch({type: 'KYSYMYS_MUUTTUI', 
       payload:
       {
         kysymys: event.target.value, 
@@ -15,12 +16,20 @@ const Kysymys = (props) => {
       <div> {props.kysymys.kysymys} </div>
             {props.kysymys.vastaukset.map((vastaus, index) => 
             <div key={index}> 
-            <Vastaus vastaus = {vastaus} dispatch = {props.dispatch} kysymysIndex = {props.kysymysIndex} vastausIndex = {index}/> 
+            <Vastaus vastaus = {vastaus} dispatch = {props.dispatch} kysymysIndex = {props.kysymysIndex} vastausIndex = {index} moodi={props.moodi}/> 
             </div>)}
-            <img className="Nappi" src={plus} alt="Lisää vastausvaihtoehto" onClick={(event)=>
+            <img className="Image-nappi" src={plus} alt="Lisää vastausvaihtoehto" onClick={(event)=>
             {props.dispatch({type: 'LISÄÄ_VASTAUS', payload: {kysymysIndex: props.kysymysIndex}})}}/>
-            <img className="Isompi-nappi" src={trash} alt="Poista kysymys" onClick={(event)=>
+            <img className="Isompi-image-nappi" src={trash} alt="Poista kysymys" onClick={(event)=>
             {props.dispatch({type: 'POISTA_KYSYMYS', payload: {kysymysIndex: props.kysymysIndex}})}}/>
+            </>
+            : <><div> {props.kysymys.kysymys} </div>
+            {props.kysymys.vastaukset.map((vastaus, index) => 
+            <div key={index}> 
+            <Vastaus vastaus = {vastaus} dispatch = {props.dispatch} kysymysIndex = {props.kysymysIndex} vastausIndex = {index} moodi={props.moodi}/> 
+            </div>)}</>
+            }
+      
     </div>
   );
 }

@@ -3,8 +3,9 @@
   margin: 10px 200px;
 }
 
-.Ruutu{
+html, body{
   background-image: url(BG.png);
+  margin: auto;
 }
 
 .App-header {
@@ -17,7 +18,11 @@
   color: white;
 }
 
-.Single-item{
+.App-header > button{
+  margin: 0 5px;
+}
+
+.Header-content{
   padding: 0 10px;
 }
 
@@ -36,17 +41,18 @@
   font-weight: normal;
 }
 
-.Nappi{
+.Image-nappi{
   height: 20px;
   width: 20px;
   opacity: 0.5;
 }
 
-.Nappi:hover{
+.Image-nappi:hover{
   opacity: 1;
+  cursor: pointer
 }
 
-.Isompi-nappi{
+.Isompi-image-nappi{
   height: 50px;
   width: 50px;
   float:right;
@@ -54,6 +60,22 @@
   opacity: 0.5;
 }
 
-.Isompi-nappi:hover{
+.Isompi-image-nappi:hover{
   opacity: 1;
+  cursor: pointer;
+}
+
+.Nappi{
+  padding: 0 10px;
+  border-radius: 8px;
+  color: black;
+  cursor: pointer;
+  border: 2px solid black;
+  background-color: white;
+}
+
+.Nappi:hover{
+  color: white;
+  cursor: pointer;
+  background-color: black;
 }
