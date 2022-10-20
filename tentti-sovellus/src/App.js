@@ -69,8 +69,8 @@ const App = () => {
         setTietoAlustettu(true)
         setTenttiNumero(action.payload.tenttiNumero)
         setOpettajaMoodi(action.payload.opettajaMoodi)
-        
-        return {...state}
+        const tentitkopsukopsu = action.payload.tentitKopsu
+        return tentitkopsukopsu
       default:
         throw new Error("Reduceriin tultiin oudosti.");
     }
@@ -82,7 +82,7 @@ const App = () => {
     
     if (ladattuData == null) {
       const tallennettavaData = {
-        ...tentit,
+        tentitKopsu: JSON.parse(JSON.stringify({...tentit})),
         tenttiNumero,
         opettajaMoodi,
         tietoAlustettu
@@ -99,7 +99,7 @@ const App = () => {
   
   useEffect(() => {
     const tallennettavaData = {
-      ...tentit,
+      tentitKopsu: JSON.parse(JSON.stringify({...tentit})),
       tenttiNumero,
       opettajaMoodi,
       tietoAlustettu
@@ -107,7 +107,8 @@ const App = () => {
     if (tallennetaanko === true) {
       console.log("Muutos pitää tallentaa")     
       localStorage.setItem('tenttiData', JSON.stringify(tallennettavaData));
-      dispatch({ type: "PÄIVITÄ_TALLENNUSTILA", payload: tallennettavaData })
+      console.log(localStorage.getItem('tenttiData'))
+      dispatch({ type: "PÄIVITÄ_TALLENNUSTILA", payload: false })
     }
   }, [tallennetaanko, tentit, tenttiNumero, opettajaMoodi, tietoAlustettu]);
   
