@@ -1,7 +1,6 @@
 import './App.css';
 import Tentti from './Tentti';
 import React, {useState, useReducer, useEffect } from 'react';
-import { act } from 'react-dom/test-utils';
 
 const App = () => {
   const[tenttiNumero, setTenttiNumero] = useState(0);
@@ -70,6 +69,7 @@ const App = () => {
         setTietoAlustettu(true)
         setTenttiNumero(action.payload.tenttiNumero)
         setOpettajaMoodi(action.payload.opettajaMoodi)
+        
         return {...state}
       default:
         throw new Error("Reduceriin tultiin oudosti.");
