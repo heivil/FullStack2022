@@ -6,7 +6,7 @@ const App = () => {
   const[tenttiNumero, setTenttiNumero] = useState(0);
   const[tallennetaanko, setTallennetaanko] = useState(false);
   const[tietoAlustettu, setTietoAlustettu] = useState(false);
-  const[opettajaMoodi, setOpettajaMoodi] = useState(false)
+  const[opettajaMoodi, setOpettajaMoodi] = useState(false);
   
   let kysymys1 = {kysymys: "Kumpi ja Kampi tappeli. Kumpi voitti?", vastaukset: ["Kumpi", "Kampi", "Kumpikin"]}
   let kysymys2 = {kysymys: "Kumpi painaa enemmän, kilo höyheniä vai kilo kiviä?", vastaukset: ["Kivet", "Höyhenet", "Painavat saman verran"] }
@@ -15,7 +15,7 @@ const App = () => {
   let kysymys5 = {kysymys: "Paljonko on 100 + 100", vastaukset: ["200", "500", "69 höhö"] }
   let kysymys6 = {kysymys: "Kumpi tuli ensin, muna vai kana?", vastaukset: ["Kana", "Muna", "Yhtäaikaa"] }
   
-
+  
   let tentti1 = {nimi:"Eka tentti",
                 kysymykset:[kysymys1, kysymys2, kysymys3]
                 }
@@ -27,50 +27,59 @@ const App = () => {
   let _tentit = [tentti1, tentti2]
   
   const[tentit, dispatch] = useReducer(reducer, _tentit);
+  let ajastin;
+  function ajoitettuVaroitus(){
+    ajastin = setTimeout(function(){ alert("Hälytys, tallenna välillä."); }, 3000);
+  }
+
+  function lopetaAjastin(){
+    console.log("Lopetetaan ajastin")
+    clearTimeout(ajastin)
+  }
 
   function reducer(state, action) {
+    const tentitKopio = JSON.parse(JSON.stringify(state))
     switch (action.type) {
        case 'VASTAUS_MUUTTUI':
         const muutettuVastaus = action.payload.vastaus
-        const tentitKopio1 = JSON.parse(JSON.stringify({...state}))
-        tentitKopio1[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex] = muutettuVastaus
-        return tentitKopio1;
+        tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex] = muutettuVastaus
+        return tentitKopio;
       case 'KYSYMYS_MUUTTUI':
         const muutettuKysymys = action.payload.kysymys
-        const tentitKopio2 = JSON.parse(JSON.stringify({...state}))
-        tentitKopio2[tenttiNumero].kysymykset[action.payload.kysymysIndex].kysymys = muutettuKysymys  
-        return tentitKopio2;
+        tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex].kysymys = muutettuKysymys  
+        return tentitKopio;
       case 'POISTA_KYSYMYS':
-        const tentitKopio3 = JSON.parse(JSON.stringify({...state}))
-        const kysymyksetKopio = tentitKopio3[tenttiNumero].kysymykset.filter(kysymys => 
-          kysymys !== tentitKopio3[tenttiNumero].kysymykset[action.payload.kysymysIndex])
-        tentitKopio3[tenttiNumero].kysymykset = kysymyksetKopio      
-        return tentitKopio3;
+        const kysymyksetKopio = tentitKopio[tenttiNumero].kysymykset.filter(kysymys => 
+          kysymys !== tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex])
+        tentitKopio[tenttiNumero].kysymykset = kysymyksetKopio      
+        return tentitKopio;
       case 'POISTA_VASTAUS':
-        const tentitKopio4 = JSON.parse(JSON.stringify({...state}))
-        const vastauksetKopio = tentitKopio4[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset.filter(vastaus =>
-          vastaus !== tentitKopio4[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
-        tentitKopio4[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset = vastauksetKopio
-        return tentitKopio4;
+        const vastauksetKopio = tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset.filter(vastaus =>
+          vastaus !== tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
+        tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset = vastauksetKopio
+        return tentitKopio;
       case 'LISÄÄ_KYSYMYS':
-        const tentitKopio5 = JSON.parse(JSON.stringify({...state}))
         const uusiKysymys = {kysymys: "Uusi kysymys", vastaukset: ["Uusi vastaus"]}
-        tentitKopio5[tenttiNumero].kysymykset.push(uusiKysymys)
-        return tentitKopio5;
+        tentitKopio[tenttiNumero].kysymykset.push(uusiKysymys)
+        return tentitKopio;
       case 'LISÄÄ_VASTAUS':
-        const tentitKopio6 = JSON.parse(JSON.stringify({...state}))
         const uusiVastaus = "Uusi vastaus"; 
-        tentitKopio6[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)
-        return tentitKopio6;
+        tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)
+        return tentitKopio;
       case 'PÄIVITÄ_TALLENNUSTILA':
+        console.log("ajastin päälle? ", action.payload)  
+        /* if(action.payload === true)
+        {
+          ajoitettuVaroitus()
+        } */
         setTallennetaanko(action.payload)
-        return { ...state}
+        return { ...state};
       case 'ALUSTA_DATA':
         setTietoAlustettu(true)
         setTenttiNumero(action.payload.tenttiNumero)
         setOpettajaMoodi(action.payload.opettajaMoodi)
-        const tentitkopsukopsu = action.payload.tentitKopsu
-        return tentitkopsukopsu
+        const tentitKopio7 = action.payload.tentitKopsu
+        return tentitKopio7;
       default:
         throw new Error("Reduceriin tultiin oudosti.");
     }
@@ -82,7 +91,7 @@ const App = () => {
     
     if (ladattuData == null) {
       const tallennettavaData = {
-        tentitKopsu: JSON.parse(JSON.stringify({...tentit})),
+        tentitKopsu: JSON.parse(JSON.stringify(tentit)),
         tenttiNumero,
         opettajaMoodi,
         tietoAlustettu
@@ -99,19 +108,19 @@ const App = () => {
   
   useEffect(() => {
     const tallennettavaData = {
-      tentitKopsu: JSON.parse(JSON.stringify({...tentit})),
+      tentitKopsu: JSON.parse(JSON.stringify(tentit)),
       tenttiNumero,
       opettajaMoodi,
       tietoAlustettu
     }
     if (tallennetaanko === true) {
-      console.log("Muutos pitää tallentaa")     
+      ajoitettuVaroitus()
+      console.log("Muutos tallennetaan")     
       localStorage.setItem('tenttiData', JSON.stringify(tallennettavaData));
-      console.log(localStorage.getItem('tenttiData'))
       dispatch({ type: "PÄIVITÄ_TALLENNUSTILA", payload: false })
     }
-  }, [tallennetaanko, tentit, tenttiNumero, opettajaMoodi, tietoAlustettu]);
-  
+  }, [tallennetaanko]);
+
   return (
     <div className='Screen'>
       <div className='App-header'>
@@ -124,6 +133,7 @@ const App = () => {
       <div className='Main-content'>
         <div> {tietoAlustettu && <Tentti tentti = {tentit[tenttiNumero]} moodi={opettajaMoodi} dispatch = {dispatch}/>} </div> 
         <button className='Nappi' onClick={() => {dispatch({type: 'PÄIVITÄ_TALLENNUSTILA', payload:true})}}>Tallenna tiedot</button>
+        <button className='Nappi' onClick={() => {lopetaAjastin()}}>Lopeta ajastin</button>
       </div>
     </div>
   );
