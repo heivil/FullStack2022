@@ -1,6 +1,6 @@
 import './App.css';
 import Tentti from './Tentti';
-import React, {useState, useReducer, useEffect } from 'react';
+import React, {useState, useReducer, useEffect} from 'react';
 
 const App = () => {
   const[tenttiNumero, setTenttiNumero] = useState(0);
@@ -27,9 +27,12 @@ const App = () => {
   let _tentit = [tentti1, tentti2]
   
   const[tentit, dispatch] = useReducer(reducer, _tentit);
-  let ajastin;
+  const[ajastin, setAjastin] = useState()
+  const[ekaRender, setEkaRender] = useState(true)
+
   function ajoitettuVaroitus(){
-    ajastin = setTimeout(function(){ alert("Hälytys, tallenna välillä."); }, 3000);
+    clearTimeout(ajastin)
+    setAjastin(setTimeout(function(){ alert("Hälytys, tallenna välillä."); }, 3000));
   }
 
   function lopetaAjastin(){
@@ -64,22 +67,18 @@ const App = () => {
         return tentitKopio;
       case 'LISÄÄ_VASTAUS':
         const uusiVastaus = "Uusi vastaus"; 
-        tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)
+        tentitKopio[tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)        
         return tentitKopio;
       case 'PÄIVITÄ_TALLENNUSTILA':
-        console.log("ajastin päälle? ", action.payload)  
-        /* if(action.payload === true)
-        {
-          ajoitettuVaroitus()
-        } */
         setTallennetaanko(action.payload)
-        return { ...state};
+        //lopetaAjastin()
+        return tentitKopio;
       case 'ALUSTA_DATA':
         setTietoAlustettu(true)
         setTenttiNumero(action.payload.tenttiNumero)
         setOpettajaMoodi(action.payload.opettajaMoodi)
-        const tentitKopio7 = action.payload.tentitKopsu
-        return tentitKopio7;
+        const tentitKopio2 = action.payload.tentitKopsu
+        return tentitKopio2;
       default:
         throw new Error("Reduceriin tultiin oudosti.");
     }
@@ -90,12 +89,11 @@ const App = () => {
     const ladattuData = localStorage.getItem('tenttiData'); 
     
     if (ladattuData == null) {
-      const tallennettavaData = {
-        tentitKopsu: JSON.parse(JSON.stringify(tentit)),
-        tenttiNumero,
-        opettajaMoodi,
-        tietoAlustettu
-      }
+      const tallennettavaData = { ///tämä kokonaan setStateen
+      tentitKopsu: JSON.parse(JSON.stringify(tentit)),
+      tenttiNumero,
+      opettajaMoodi,
+    }
       console.log("Data luettiin vakiosta")
       localStorage.setItem('tenttiData', JSON.stringify(tallennettavaData));
       dispatch({ type: "ALUSTA_DATA", payload: tallennettavaData })
@@ -105,20 +103,29 @@ const App = () => {
     }
 
   }, []);
+
+  useEffect(() => {
+    
+    if(ekaRender === false){
+      console.log("tentit muuttui")
+      ajoitettuVaroitus()
+    }
+    setEkaRender(false)
+    
+  },[tentit])
   
   useEffect(() => {
-    const tallennettavaData = {
+    const tallennettavaData = { ///tämä kokonaan setStateen
       tentitKopsu: JSON.parse(JSON.stringify(tentit)),
       tenttiNumero,
       opettajaMoodi,
-      tietoAlustettu
     }
     if (tallennetaanko === true) {
-      ajoitettuVaroitus()
       console.log("Muutos tallennetaan")     
       localStorage.setItem('tenttiData', JSON.stringify(tallennettavaData));
       dispatch({ type: "PÄIVITÄ_TALLENNUSTILA", payload: false })
     }
+    lopetaAjastin()
   }, [tallennetaanko]);
 
   return (
