@@ -4,16 +4,20 @@ import axios from 'axios'
 
 function ChuckNorrisFaktat() {
 
-  const [appData, dispatch] = useReducer(reducer, { fakta: "",noudetaanFaktaa:false, faktanNoutoEpäonnistui:false, faktaLista: [], aikaVäli: 5});
-  const [ajastin, setAjastin] = useState()
+  const [appData, dispatch] = useReducer(reducer, { fakta: "",noudetaanFaktaa:false, faktanNoutoEpäonnistui:false, faktaLista: [], aikaVäli: 5, failLaskuri: 0});
+  const [ajastin, setAjastin] = useState();
 
+  //ei päivitä appdata.aikaväliä 
   function ajoitettuFaktanHaku(aika){
     clearTimeout(ajastin)
     haeFakta()
-    console.log(appData.aikaVäli)
+    //console.log(appData.aikaVäli)
     setAjastin(setTimeout(function(){ ajoitettuFaktanHaku(appData.aikaVäli) }, aika * 1000));
   }
 
+  function lopetaAjastin(){
+    clearTimeout(ajastin)
+  }
 
   function reducer(state, action) {
     switch (action.type) {
@@ -22,13 +26,17 @@ function ChuckNorrisFaktat() {
         return { ...state, noudetaanFaktaa:true}
       case 'FAKTA_NOUDETTU':
         console.log("Fakta noudettu")
-        //tallenna täällä
-        return { ...state, fakta: action.payload, noudetaanFaktaa:false  }
+        const appDataKopio = JSON.parse(JSON.stringify(state))
+        if(!state.faktaLista.includes(action.payload) && action.payload !== ""){
+          appDataKopio.faktaLista.push(action.payload)
+        }
+        return { ...state, fakta: action.payload, faktanNoutoEpäonnistui:false, noudetaanFaktaa:false, faktaLista: appDataKopio.faktaLista }
       case 'FAKTAN_NOUTO_EPÄONNISTUI':
         console.log("Faktan nouto epäonnistui")
-        return { ...state, faktanNoutoEpäonnistui:true, noudetaanFaktaa:false }
+        const failLaskuriKopio = state.failLaskuri + 1;
+        return { ...state, faktanNoutoEpäonnistui:true, noudetaanFaktaa:false, failLaskuri: failLaskuriKopio}
       case 'AIKAVÄLI_MUUTETTU':
-        return{aikaVäli: action.payload}
+        return{...state, aikaVäli: action.payload}
       case 'DATA_ALUSTETTU':
         return{...state, faktaLista: action.payload}
       default:
@@ -36,9 +44,8 @@ function ChuckNorrisFaktat() {
     }
   }
 
-
-
   useEffect(() => {
+    //localStorage.clear();
     const ladattuData = localStorage.getItem('chuckNorrisData'); 
     if(ladattuData == null){
       const tallennus = JSON.parse(JSON.stringify(appData.faktaLista))
@@ -50,11 +57,24 @@ function ChuckNorrisFaktat() {
     setAjastin(setTimeout(function(){ ajoitettuFaktanHaku(appData.aikaVäli) }, appData.aikaVäli * 1000));
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem('chuckNorrisData', JSON.stringify(appData.faktaLista));
+  }, [appData.faktaLista])
+
   async function haeFakta() {
     try{
       dispatch({type: 'FAKTAN_NOUTO_ALOITETTU'})
-      let result = await axios('https://api.chucknorris.io/jokes/random'); 
-      dispatch({type: 'FAKTA_NOUDETTU', payload: result.data.value})
+      let result;
+      if(appData.failLaskuri < 4){
+        result = await axios('https://api.chucknorris.io/jokes/random'); 
+        if(!appData.faktanNoutoEpäonnistui)dispatch({type: 'FAKTA_NOUDETTU', payload: result.data.value})
+      }else if (appData.failLaskuri < 7){
+        result = appData.faktaLista[Math.floor(Math.random() * appData.faktaLista.length)]
+        console.log(appData.faktaLista.length)
+        if(!appData.faktanNoutoEpäonnistui)dispatch({type: 'FAKTA_NOUDETTU', payload: result})
+      }
+      
+      
     } catch (error){
       console.log("Erroria pukkaa: ", error)
       dispatch({type: 'FAKTAN_NOUTO_EPÄONNISTUI'})
@@ -63,21 +83,16 @@ function ChuckNorrisFaktat() {
 
   return (
     <div>
-      {/* aikaa jäljellä uuteen faktaan tähän */}
       <div>{appData.fakta}</div>
       <input type="number" value = {appData.aikaVäli} onChange={(event)=>{dispatch({type: 'AIKAVÄLI_MUUTETTU', payload: event.target.value})}}/>
 
-      {appData.noudetaanFaktaa && "Noudetaan faktaa Chuck Norriksesta!"}
+      <button onClick={()=>{ ajoitettuFaktanHaku(appData.aikaVäli)}}>Hae vitsi</button>
 
-      {appData.faktanNoutoEpäonnistui && "Faktan nouto epäonnistui"}
+      <button onClick={()=>{lopetaAjastin()}}> Lopeta generointi</button>
 
-      <button onClick={()=>{
-        ajoitettuFaktanHaku(appData.aikaVäli)
-      }}
-      >
-        Hae vitsi
-      </button>
+      <p>{appData.noudetaanFaktaa && "Noudetaan faktaa Chuck Norriksesta!"}</p>
 
+      <p>{appData.faktanNoutoEpäonnistui && "Faktan nouto epäonnistui"}</p>
     </div>
   );
 }
