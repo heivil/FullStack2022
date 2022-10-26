@@ -1,6 +1,8 @@
 import './App.css';
 import Tentti from './Tentti';
 import React, {useState, useReducer, useEffect} from 'react';
+import axios from 'axios'
+import KirjauduRuutu from './Kirjaudu';
 
 const App = () => {
 
@@ -22,12 +24,13 @@ const App = () => {
 
   let _tentit = [tentti1, tentti2]
   
-  const[data, dispatch] = useReducer(reducer, {tentit: _tentit, tenttiNumero: 0, tallennetaanko: false, tietoAlustettu: false, opettajaMoodi: false, esnimmäinenKierros: true});
+  const[data, dispatch] = useReducer(reducer, {tentit: _tentit, tenttiNumero: 0, tallennetaanko: false, tietoAlustettu: false, 
+    opettajaMoodi: false, ensimmäinenKierros: true, kirjauduttu: false, kirjauduRuutu: true});
   const[ajastin, setAjastin] = useState()
 
   function ajoitettuVaroitus(){
     clearTimeout(ajastin)
-    setAjastin(setTimeout(function(){ alert("Hälytys, tallenna välillä."); }, 3000));
+    !data.kirjauduRuutu && setAjastin(setTimeout(function(){ alert("Hälytys, tallenna välillä."); }, 3000));
   }
 
   function lopetaAjastin(){
@@ -67,13 +70,20 @@ const App = () => {
       case 'PÄIVITÄ_TALLENNUSTILA':
         return {...state, tallennetaanko: action.payload};
       case 'ALUSTA_DATA':
-        const dataKopio2 = action.payload
-        return {...state, tentit: dataKopio2.tentit, tietoAlustettu: true, 
+        return {...state, tentit: action.payload.tentit, tietoAlustettu: true, 
           tenttiNumero: action.payload.tenttiNumero, opettajaMoodi: action.payload.opettajaMoodi};
       case 'MUUTA_TENTTINUMERO':
         return {...state, tenttiNumero: action.payload}
       case 'MUUTA_MOODI':
         return{...state, opettajaMoodi: action.payload}
+      case 'EKA_KIERROS_OHI':
+        return{...state, ensimmäinenKierros: false}
+      case 'KIRJAUDU':
+        return{...state, kirjauduttu: true}
+      case 'REKISTERÖIDY':
+        return{...state}
+      case 'KIRJAUDU_RUUTU':
+        return{...state, kirjauduRuutu: action.payload}
       default:
         throw new Error("Reduceriin tultiin oudosti.");
     }
@@ -97,11 +107,22 @@ const App = () => {
       dispatch({ type: "ALUSTA_DATA", payload: (JSON.parse(ladattuData)) })
     }
 
+    /* const getData = async () => {
+      const result = await axios('http://localhost:8080');
+      console.log("result:", result)
+      dispatch({ type: "ALUSTA_DATA", payload: result.data.data })
+    }
+    getData() */
+
   }, []);
 
   useEffect(() => {
+    if(!data.ensimmäinenKierros){ //kutsuu kaksi kertaa alussa :(
       console.log("tentit muuttui")
       ajoitettuVaroitus()
+    }else {
+      dispatch({type: 'EKA_KIERROS_OHI'})
+    }
   },[data.tentit])
   
   useEffect(() => {
@@ -116,23 +137,52 @@ const App = () => {
       dispatch({ type: "PÄIVITÄ_TALLENNUSTILA", payload: false })
     }
     lopetaAjastin()
+
+   /*  const saveData = async () => {
+
+      try {
+      
+        const result = await axios.post('http://localhost:8080', {
+          data: appData
+        })
+        dispatch({ type: "PÄIVITÄ_TALLENNUSTILA", payload: false })
+      } catch (error) {
+        console.log("virhetilanne",error)
+      }
+    }
+    if (appData.tallennetaanko == true) {
+      saveData()
+    } */
+
+
   }, [data.tallennetaanko]);
 
   return (
-    
     <div className='Screen'>
+      {data.kirjauduttu && 
       <div className='App-header'>
-        <div> Tentit: {data.tentit.length} </div>
+        <div> Tenttejä: {data.tentit.length} </div>
         <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_TENTTINUMERO', payload:0})}>{tentti1.nimi} </button>
         <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_TENTTINUMERO', payload:1})}>{tentti2.nimi} </button>
         <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_MOODI', payload:!data.opettajaMoodi})}>{data.opettajaMoodi ? "Oppilasmoodiin" : "Opettajamoodiin"} </button>
-      </div>
+      </div>}
+      {!data.kirjauduttu && 
+      <div className='App-header'>
+        <button className='Nappi' onClick = {() => dispatch({type:'KIRJAUDU_RUUTU', payload:true})}>Kirjaudu</button>
+        <button className='Nappi' onClick = {() => dispatch({type:'KIRJAUDU_RUUTU', payload:false})}>Rekisteröidy</button>
+        <button className='Nappi' onClick = {() => {}}>Tietoa sovelluksesta</button>
+      </div>}
       
+      {data.kirjauduttu &&
       <div className='Main-content'>
         <div> {data.tietoAlustettu && <Tentti tentti = {data.tentit[data.tenttiNumero]} moodi={data.opettajaMoodi} dispatch = {dispatch}/>} </div> 
         <button className='Nappi' onClick={() => {dispatch({type: 'PÄIVITÄ_TALLENNUSTILA', payload:true}); lopetaAjastin()}}>Tallenna tiedot</button>
-        <button className='Nappi' onClick={() => {lopetaAjastin()}}>Lopeta ajastin</button>
-      </div>
+      </div>}
+      {!data.kirjauduttu &&
+      <div className='Main-content'>
+        <div> {data.tietoAlustettu && <KirjauduRuutu kirjaudu = {data.kirjauduRuutu} dispatch = {dispatch}/>} </div> 
+      
+      </div>}
     </div>
   );
 }
