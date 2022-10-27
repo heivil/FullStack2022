@@ -7,23 +7,18 @@ const port = 8080
 
 app.use(cors())  
 
-/* app.use(cors({
-  origin: "http://localhost:3000"
-}))*/
-
 app.use(express.json());
 
-app.get('/cors', (req, res) => {
-  res.set('Access-Control-Allow-Origin', '*');
-  console.log("Palvelimeen tultiin kysymään dataa")
+app.get('/', (req, res) => {
+  console.log("Palvelimelta kysytään dataa ")
   const data = fs.readFileSync("./SaveData.json", { encoding: 'utf8', flag: 'r' }); 
   res.send(data)
 })
 
 app.post('/', (req, res) => {
-  console.log("Palvelimeen tultiin tallentamaan dataa")
-  fs.writeFileSync('kouludata.json', JSON.stringify(req.body));
-  res.send('Tallennetaan')
+  console.log("Palvelimelle tallennetaan dataa", req)
+  fs.writeFileSync("./SaveData.json", JSON.stringify(req.body.data));
+  res.send("Tallennetaan")
 })
 
 app.listen(port, () => {

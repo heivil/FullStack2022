@@ -71,6 +71,7 @@ const App = () => {
       case 'ASETA_TALLENNETTAVA_DATA':
         return {...state, tallennettavaData: action.payload}
       case 'ALUSTA_DATA':
+        console.log("sissi", action.payload.tentit)
         return {...state, tentit: action.payload.tentit, tietoAlustettu: true, 
           tenttiNumero: action.payload.tenttiNumero, opettajaMoodi: action.payload.opettajaMoodi};
       case 'MUUTA_TENTTINUMERO':
@@ -92,9 +93,9 @@ const App = () => {
 
   useEffect(() => {
     //localStorage.clear();
-    //const ladattuData = localStorage.getItem('tenttiData'); 
     
-    /* if (ladattuData == null) {
+    /* const ladattuData = localStorage.getItem('tenttiData'); 
+    if (ladattuData == null) {
       const tallennettavaData = {
         tentit: JSON.parse(JSON.stringify(data.tentit)),
         tenttiNumero: data.tenttiNumero,
@@ -110,9 +111,9 @@ const App = () => {
     
     const getData = async () => {
       try{
-        const result = await axios('http://localhost:8080', {mode:'cors'});
-        console.log("Alustus result:", result)
-        dispatch({ type: 'ALUSTA_DATA', payload: result.data.data })
+        const result = await axios('http://localhost:8080');
+        console.log("Alustus result:", result.data)
+        dispatch({ type: 'ALUSTA_DATA', payload: result.data })
       }catch(error){
         console.log("Virhe alustaessa: ",error)
       }
@@ -152,7 +153,7 @@ const App = () => {
           tenttiNumero: data.tenttiNumero,
           opettajaMoodi: data.opettajaMoodi,
         }
-        console.log("Muutos tallennetaan")
+        console.log("Muutos tallennetaan", uusiTallennettavaData)
         dispatch({type: 'ASETA_TALLENNETTAVA_DATA', payload: uusiTallennettavaData})
         const result = await axios.post('http://localhost:8080', {data: data.tallennettavaData})
         dispatch({ type: 'PÄIVITÄ_TALLENNUSTILA', payload: false })
