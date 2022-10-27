@@ -8,7 +8,8 @@ const KirjauduRuutu = (props) => {
       </label><br/>
       <label>Salasana: <br/>
         <input type="text" />
-      </label>
+      </label><br/>
+      <label>Admin<input type="checkbox"/></label>
     </form>
     <button onClick={(event) => {props.kirjaudu ? props.dispatch({type: 'KIRJAUDU'}) : props.dispatch({type: 'REKISTERÖIDY'})}}>
       {props.kirjaudu ? "Kirjaudu sisään" : "Rekisteröidy"}

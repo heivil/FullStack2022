@@ -13,7 +13,6 @@ const App = () => {
   let kysymys5 = {kysymys: "Paljonko on 100 + 100", vastaukset: ["200", "500", "69 höhö"] }
   let kysymys6 = {kysymys: "Kumpi tuli ensin, muna vai kana?", vastaukset: ["Kana", "Muna", "Yhtäaikaa"] }
   
-  
   let tentti1 = {nimi:"Eka tentti",
                 kysymykset:[kysymys1, kysymys2, kysymys3]
                 }
@@ -25,12 +24,12 @@ const App = () => {
   let _tentit = [tentti1, tentti2]
   
   const[data, dispatch] = useReducer(reducer, {tentit: _tentit, tenttiNumero: 0, tallennetaanko: false, tietoAlustettu: false, 
-    opettajaMoodi: false, ensimmäinenKierros: true, kirjauduttu: false, kirjauduRuutu: true});
+    opettajaMoodi: false, ensimmäinenKierros: true, kirjauduttu: false, kirjauduRuutu: true, tallennettavaData:{}});
   const[ajastin, setAjastin] = useState()
 
   function ajoitettuVaroitus(){
     clearTimeout(ajastin)
-    !data.kirjauduRuutu && setAjastin(setTimeout(function(){ alert("Hälytys, tallenna välillä."); }, 3000));
+    !data.kirjauduRuutu && data.opettajaMoodi && setAjastin(setTimeout(function(){ alert("Hälytys, tallenna välillä."); }, 3000));
   }
 
   function lopetaAjastin(){
@@ -69,6 +68,8 @@ const App = () => {
         return {...state, tentit: dataKopio.tentit};
       case 'PÄIVITÄ_TALLENNUSTILA':
         return {...state, tallennetaanko: action.payload};
+      case 'ASETA_TALLENNETTAVA_DATA':
+        return {...state, tallennettavaData: action.payload}
       case 'ALUSTA_DATA':
         return {...state, tentit: action.payload.tentit, tietoAlustettu: true, 
           tenttiNumero: action.payload.tenttiNumero, opettajaMoodi: action.payload.opettajaMoodi};
@@ -91,9 +92,9 @@ const App = () => {
 
   useEffect(() => {
     //localStorage.clear();
-    const ladattuData = localStorage.getItem('tenttiData'); 
+    //const ladattuData = localStorage.getItem('tenttiData'); 
     
-    if (ladattuData == null) {
+    /* if (ladattuData == null) {
       const tallennettavaData = {
         tentit: JSON.parse(JSON.stringify(data.tentit)),
         tenttiNumero: data.tenttiNumero,
@@ -105,19 +106,24 @@ const App = () => {
     } else {
       console.log("Data luettiin local storagesta")
       dispatch({ type: "ALUSTA_DATA", payload: (JSON.parse(ladattuData)) })
+    } */
+    
+    const getData = async () => {
+      try{
+        const result = await axios('http://localhost:8080', {mode:'cors'});
+        console.log("Alustus result:", result)
+        dispatch({ type: 'ALUSTA_DATA', payload: result.data.data })
+      }catch(error){
+        console.log("Virhe alustaessa: ",error)
+      }
     }
 
-    /* const getData = async () => {
-      const result = await axios('http://localhost:8080');
-      console.log("result:", result)
-      dispatch({ type: "ALUSTA_DATA", payload: result.data.data })
-    }
-    getData() */
-
+    getData() 
+    
   }, []);
 
   useEffect(() => {
-    if(!data.ensimmäinenKierros){ //kutsuu kaksi kertaa alussa :(
+    if(!data.ensimmäinenKierros){ //kutsuu silti kaksi kertaa alussa :(
       console.log("tentit muuttui")
       ajoitettuVaroitus()
     }else {
@@ -126,7 +132,7 @@ const App = () => {
   },[data.tentit])
   
   useEffect(() => {
-    const tallennettavaData = { 
+    /* const tallennettavaData = { 
       tentit: data.tentit,
       tenttiNumero: data.tenttiNumero,
       opettajaMoodi: data.opettajaMoodi
@@ -136,23 +142,27 @@ const App = () => {
       localStorage.setItem('tenttiData', JSON.stringify(tallennettavaData));
       dispatch({ type: "PÄIVITÄ_TALLENNUSTILA", payload: false })
     }
-    lopetaAjastin()
+    lopetaAjastin() */
 
-   /*  const saveData = async () => {
+    const saveData = async () => {
 
       try {
-      
-        const result = await axios.post('http://localhost:8080', {
-          data: appData
-        })
-        dispatch({ type: "PÄIVITÄ_TALLENNUSTILA", payload: false })
+        const uusiTallennettavaData = { 
+          tentit: data.tentit,
+          tenttiNumero: data.tenttiNumero,
+          opettajaMoodi: data.opettajaMoodi,
+        }
+        console.log("Muutos tallennetaan")
+        dispatch({type: 'ASETA_TALLENNETTAVA_DATA', payload: uusiTallennettavaData})
+        const result = await axios.post('http://localhost:8080', {data: data.tallennettavaData})
+        dispatch({ type: 'PÄIVITÄ_TALLENNUSTILA', payload: false })
       } catch (error) {
-        console.log("virhetilanne",error)
+        console.log("Virhe tallennettaessa",error)
       }
     }
-    if (appData.tallennetaanko == true) {
+    if (data.tallennetaanko == true) {
       saveData()
-    } */
+    } 
 
 
   }, [data.tallennetaanko]);
@@ -176,7 +186,7 @@ const App = () => {
       {data.kirjauduttu &&
       <div className='Main-content'>
         <div> {data.tietoAlustettu && <Tentti tentti = {data.tentit[data.tenttiNumero]} moodi={data.opettajaMoodi} dispatch = {dispatch}/>} </div> 
-        <button className='Nappi' onClick={() => {dispatch({type: 'PÄIVITÄ_TALLENNUSTILA', payload:true}); lopetaAjastin()}}>Tallenna tiedot</button>
+        {data.opettajaMoodi && <button className='Nappi' onClick={() => {dispatch({type: 'PÄIVITÄ_TALLENNUSTILA', payload:true}); lopetaAjastin()}}>Tallenna tiedot</button>}
       </div>}
       {!data.kirjauduttu &&
       <div className='Main-content'>

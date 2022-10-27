@@ -1,16 +1,29 @@
 const fs = require('fs');
-const express = require('express')  //Jos ei toimi, niin "npm install express"
-const cors = require('cors')
+const express = require('express')  
+const cors = require('cors');
+const { findSourceMap } = require('module');
 const app = express()
 const port = 8080
 
-app.get('/', (req, res) => {
-  // tiedon luku asynkronisesti
-  res.send('Hello!')
+app.use(cors())  
+
+/* app.use(cors({
+  origin: "http://localhost:3000"
+}))*/
+
+app.use(express.json());
+
+app.get('/cors', (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  console.log("Palvelimeen tultiin kysymään dataa")
+  const data = fs.readFileSync("./SaveData.json", { encoding: 'utf8', flag: 'r' }); 
+  res.send(data)
 })
+
 app.post('/', (req, res) => {
-  // tiedon kirjoitus asynkronisesti  req.body antanee tarvittavan datan
-  res.send('Hello World!')
+  console.log("Palvelimeen tultiin tallentamaan dataa")
+  fs.writeFileSync('kouludata.json', JSON.stringify(req.body));
+  res.send('Tallennetaan')
 })
 
 app.listen(port, () => {
