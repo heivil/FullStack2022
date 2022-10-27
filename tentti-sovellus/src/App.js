@@ -24,7 +24,7 @@ const App = () => {
   let _tentit = [tentti1, tentti2]
   
   const[data, dispatch] = useReducer(reducer, {tentit: _tentit, tenttiNumero: 0, tallennetaanko: false, tietoAlustettu: false, 
-    opettajaMoodi: false, ensimmäinenKierros: true, kirjauduttu: false, kirjauduRuutu: true, tallennettavaData:{}});
+    opettajaMoodi: false, ensimmäinenKierros: true, kirjauduttu: false, kirjauduRuutu: true, tallennettavaData:{}, käyttäjät:[]});
   const[ajastin, setAjastin] = useState()
 
   function ajoitettuVaroitus(){
@@ -71,9 +71,8 @@ const App = () => {
       case 'ASETA_TALLENNETTAVA_DATA':
         return {...state, tallennettavaData: action.payload}
       case 'ALUSTA_DATA':
-        console.log("sissi", action.payload.tentit)
         return {...state, tentit: action.payload.tentit, tietoAlustettu: true, 
-          tenttiNumero: action.payload.tenttiNumero, opettajaMoodi: action.payload.opettajaMoodi};
+          tenttiNumero: action.payload.tenttiNumero, opettajaMoodi: action.payload.opettajaMoodi, käyttäjät:action.payload.käyttäjät};
       case 'MUUTA_TENTTINUMERO':
         return {...state, tenttiNumero: action.payload}
       case 'MUUTA_MOODI':
@@ -81,9 +80,33 @@ const App = () => {
       case 'EKA_KIERROS_OHI':
         return{...state, ensimmäinenKierros: false}
       case 'KIRJAUDU':
-        return{...state, kirjauduttu: true}
+        
+        let kirjaudutaanko = false;
+        let kirjautuja={tunnus: "", salasana: "", admin: false};
+        for(let i = 0; i<state.käyttäjät.length; i++){
+          if(state.käyttäjät[i].tunnus === action.payload.tunnus && state.käyttäjät[i].salasana === action.payload.salasana){
+            kirjaudutaanko = true
+            kirjautuja = state.käyttäjät[i]
+            break;
+          }        
+        }
+        if(kirjaudutaanko === false) alert("Väärä tunnus tai salasana.");
+        return{...state, kirjauduttu: kirjaudutaanko, opettajaMoodi:kirjautuja.admin}
       case 'REKISTERÖIDY':
-        return{...state}
+        console.log(state.käyttäjät)
+        const uusiKäyttäjä = {tunnus: action.payload.tunnus, salasana:action.payload.salasana, admin:action.payload.admin}
+        let tunnusVapaana = true
+        for(let i = 0; i<state.käyttäjät.length; i++){
+          if(state.käyttäjät[i].tunnus === action.payload.tunnus) tunnusVapaana = false
+        }
+        if(tunnusVapaana){
+          let käyttäjätKopio = JSON.parse(JSON.stringify(state.käyttäjät))
+          käyttäjätKopio.push(uusiKäyttäjä)
+          return{...state, käyttäjät: käyttäjätKopio, tallennetaanko: true}
+        }else{
+          alert("Tunnus on jo varattu.");
+          return{...state}
+        }
       case 'KIRJAUDU_RUUTU':
         return{...state, kirjauduRuutu: action.payload}
       default:
@@ -92,23 +115,6 @@ const App = () => {
   }
 
   useEffect(() => {
-    //localStorage.clear();
-    
-    /* const ladattuData = localStorage.getItem('tenttiData'); 
-    if (ladattuData == null) {
-      const tallennettavaData = {
-        tentit: JSON.parse(JSON.stringify(data.tentit)),
-        tenttiNumero: data.tenttiNumero,
-        opettajaMoodi: data.opettajaMoodi
-      }
-      console.log("Data luettiin vakiosta")
-      localStorage.setItem('tenttiData', JSON.stringify(tallennettavaData));
-      dispatch({ type: "ALUSTA_DATA", payload: tallennettavaData })
-    } else {
-      console.log("Data luettiin local storagesta")
-      dispatch({ type: "ALUSTA_DATA", payload: (JSON.parse(ladattuData)) })
-    } */
-    
     const getData = async () => {
       try{
         const result = await axios('http://localhost:8080');
@@ -118,7 +124,6 @@ const App = () => {
         console.log("Virhe alustaessa: ",error)
       }
     }
-
     getData() 
     
   }, []);
@@ -133,26 +138,17 @@ const App = () => {
   },[data.tentit])
   
   useEffect(() => {
-    /* const tallennettavaData = { 
-      tentit: data.tentit,
-      tenttiNumero: data.tenttiNumero,
-      opettajaMoodi: data.opettajaMoodi
-    }
-    if (data.tallennetaanko === true) {
-      console.log("Muutos tallennetaan")     
-      localStorage.setItem('tenttiData', JSON.stringify(tallennettavaData));
-      dispatch({ type: "PÄIVITÄ_TALLENNUSTILA", payload: false })
-    }
-    lopetaAjastin() */
 
     const saveData = async () => {
-
+      
       try {
         const uusiTallennettavaData = { 
           tentit: data.tentit,
           tenttiNumero: data.tenttiNumero,
           opettajaMoodi: data.opettajaMoodi,
+          käyttäjät: data.käyttäjät
         }
+        
         console.log("Muutos tallennetaan", uusiTallennettavaData)
         dispatch({type: 'ASETA_TALLENNETTAVA_DATA', payload: uusiTallennettavaData})
         const result = await axios.post('http://localhost:8080', {data: data.tallennettavaData})
@@ -161,11 +157,9 @@ const App = () => {
         console.log("Virhe tallennettaessa",error)
       }
     }
-    if (data.tallennetaanko == true) {
+    if (data.tallennetaanko === true) {
       saveData()
     } 
-
-
   }, [data.tallennetaanko]);
 
   return (
@@ -175,7 +169,7 @@ const App = () => {
         <div> Tenttejä: {data.tentit.length} </div>
         <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_TENTTINUMERO', payload:0})}>{tentti1.nimi} </button>
         <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_TENTTINUMERO', payload:1})}>{tentti2.nimi} </button>
-        <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_MOODI', payload:!data.opettajaMoodi})}>{data.opettajaMoodi ? "Oppilasmoodiin" : "Opettajamoodiin"} </button>
+        {/* <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_MOODI', payload:!data.opettajaMoodi})}>{data.opettajaMoodi ? "Oppilasmoodiin" : "Opettajamoodiin"} </button> */}
       </div>}
       {!data.kirjauduttu && 
       <div className='App-header'>

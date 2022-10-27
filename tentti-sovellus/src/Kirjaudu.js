@@ -4,14 +4,23 @@ const KirjauduRuutu = (props) => {
       <h2>{props.kirjaudu ? "Kirjaudu" : "Rekisteröidy"}</h2>
       <form>
       <label>Käyttäjätunnus: <br/>
-        <input type="text" />
+        <input type="text" id="Tunnus"/>
       </label><br/>
       <label>Salasana: <br/>
-        <input type="text" />
+        <input type="text" id="Salasana"/>
       </label><br/>
-      <label>Admin<input type="checkbox"/></label>
+      {!props.kirjaudu && <label>Admin<input type="checkbox" id="Admin"/></label>}
     </form>
-    <button onClick={(event) => {props.kirjaudu ? props.dispatch({type: 'KIRJAUDU'}) : props.dispatch({type: 'REKISTERÖIDY'})}}>
+    <button onClick={() => {props.kirjaudu ? props.dispatch({type: 'KIRJAUDU', payload:{
+      tunnus: document.getElementById('Tunnus').value, 
+      salasana: document.getElementById('Salasana').value, 
+    }}) : 
+    props.dispatch({type: 'REKISTERÖIDY', 
+    payload: {
+      tunnus: document.getElementById('Tunnus').value, 
+      salasana: document.getElementById('Salasana').value, 
+      admin: document.getElementById('Admin').checked
+    }})}}>
       {props.kirjaudu ? "Kirjaudu sisään" : "Rekisteröidy"}
     </button>
     </div>
