@@ -27,7 +27,7 @@ const insertToTable = async (name) => {
 
   } catch (err) {
     console.log("Error ", err)
-  }
+  } 
 }
 
 const deleteFromTable = async (name) => {
@@ -79,9 +79,11 @@ const getTestsInAlphabeticalOrder = async () =>{
 }
 
 const getMultipleTestsById = async (first, second, third) =>{
-  const allIds = first.concat("', '", second, "', '", third)
+
+  const text = "SELECT * FROM tentit WHERE id IN ($1, $2, $3)"
+  const values = [first, second,third]
   try {
-    let res = await pool.query("SELECT * FROM tentit WHERE id IN ('" + allIds +"')")
+    let res = await pool.query(text, values)
     console.log(res.rows)
   } catch (err) {
     console.log("Error ", err)
@@ -105,14 +107,15 @@ const getValidTests = async () =>{
     console.log("Error ", err)
   }
 }
-//insertToTable('matikan tentti'); 
-//insertToTable('algebran tentti');
-//insertToTable('fysiikan tentti');
-//deleteFromTable('pentti');
+
+//insertToTable('testi tentti');
+//deleteFromTable('biologian tentti');
 //changeTableName('tentit');
 //getAllTests();
 //getTestById(218);
-getTestsInAlphabeticalOrder();
-//getMultipleTestsById('220', '221', '219');
+//getTestsInAlphabeticalOrder();
+getMultipleTestsById('220', '221', '219');
 //getTestsBeforeDate('2022-10-12');
 //getValidTests();
+
+pool.end();

@@ -129,7 +129,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if(!data.ensimmäinenKierros){ //kutsuu silti kaksi kertaa alussa :(
+    if(!data.ensimmäinenKierros){ 
       console.log("tentit muuttui")
       ajoitettuVaroitus()
     }else {
