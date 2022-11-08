@@ -9,22 +9,23 @@ const App = () => {
   let kysymys1 = {kysymys: "Kumpi ja Kampi tappeli. Kumpi voitti?", vastaukset: ["Kumpi", "Kampi", "Kumpikin"]}
   let kysymys2 = {kysymys: "Kumpi painaa enemmän, kilo höyheniä vai kilo kiviä?", vastaukset: ["Kivet", "Höyhenet", "Painavat saman verran"] }
   let kysymys3 = {kysymys: "Montako vähintään 500 neliömetrin kokoista järveä on Suomessa?", vastaukset: ["n. 57 000", "n. 168 000", "en ole laskenut"]}
-  let kysymys4 = {kysymys: "Paljonko painaa teelusikallinen neutronitähteä Maan pinnalla?", vastaukset: ["Noin miljardi tonnia", "Auton verran", "En ole varma, googlesta saa monta eri vastausta"] }
+/*   let kysymys4 = {kysymys: "Paljonko painaa teelusikallinen neutronitähteä Maan pinnalla?", vastaukset: ["Noin miljardi tonnia", "Auton verran", "En ole varma, googlesta saa monta eri vastausta"] }
   let kysymys5 = {kysymys: "Paljonko on 100 + 100", vastaukset: ["200", "500", "69 höhö"] }
-  let kysymys6 = {kysymys: "Kumpi tuli ensin, muna vai kana?", vastaukset: ["Kana", "Muna", "Yhtäaikaa"] }
+  let kysymys6 = {kysymys: "Kumpi tuli ensin, muna vai kana?", vastaukset: ["Kana", "Muna", "Yhtäaikaa"] } */
   
   let tentti1 = {nimi:"Eka tentti",
                 kysymykset:[kysymys1, kysymys2, kysymys3]
                 }
 
-  let tentti2 = {nimi:"Toka tentti",
+/*   let tentti2 = {nimi:"Toka tentti",
                 kysymykset:[kysymys4, kysymys5, kysymys6]
                 }
 
-  let _tentit = [tentti1, tentti2]
+  let _tentit = [tentti1, tentti2] */
   
-  const[data, dispatch] = useReducer(reducer, {tentit: _tentit, tenttiNumero: 0, tallennetaanko: false, tietoAlustettu: false, 
-    opettajaMoodi: false, ensimmäinenKierros: true, kirjauduttu: false, kirjauduRuutu: true, tallennettavaData:{}, käyttäjät:[]});
+  //tietoalustettu, kirjauduttu ja opettajamoodi on true testausta varten. älä unohda!***********************************************************************
+  const[data, dispatch] = useReducer(reducer, {tentti: tentti1, tenttiNumero: 0, tallennetaanko: false, tietoAlustettu: true, 
+    opettajaMoodi: true, ensimmäinenKierros: true, kirjauduttu: true, kirjauduRuutu: true, tallennettavaData:{}, käyttäjät:[]});
   const[ajastin, setAjastin] = useState()
 
   function ajoitettuVaroitus(){
@@ -42,36 +43,36 @@ const App = () => {
     switch (action.type) {
        case 'VASTAUS_MUUTTUI':
         const muutettuVastaus = action.payload.vastaus
-        dataKopio.tentit[state.tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex] = muutettuVastaus
+        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex] = muutettuVastaus
         return dataKopio;
       case 'KYSYMYS_MUUTTUI':
         const muutettuKysymys = action.payload.kysymys
-        dataKopio.tentit[state.tenttiNumero].kysymykset[action.payload.kysymysIndex].kysymys = muutettuKysymys  
+        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].kysymys = muutettuKysymys  
         return dataKopio;
       case 'POISTA_KYSYMYS':
         const kysymyksetKopio = dataKopio.tentit[state.tenttiNumero].kysymykset.filter(kysymys => 
           kysymys !== dataKopio.tentit[state.tenttiNumero].kysymykset[action.payload.kysymysIndex])
-        dataKopio.tentit[state.tenttiNumero].kysymykset = kysymyksetKopio      
+        dataKopio.tentti.kysymykset = kysymyksetKopio      
         return dataKopio;
       case 'POISTA_VASTAUS':
-        const vastauksetKopio = dataKopio.tentit[state.tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset.filter(vastaus =>
-          vastaus !== dataKopio.tentit[state.tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
-        dataKopio.tentit[state.tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset = vastauksetKopio
+        const vastauksetKopio = dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.filter(vastaus =>
+          vastaus !== dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
+        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset = vastauksetKopio
         return dataKopio;
       case 'LISÄÄ_KYSYMYS':
         const uusiKysymys = {kysymys: "Uusi kysymys", vastaukset: ["Uusi vastaus"]}
-        dataKopio.tentit[state.tenttiNumero].kysymykset.push(uusiKysymys)
+        dataKopio.tentti.kysymykset.push(uusiKysymys)
         return dataKopio;
       case 'LISÄÄ_VASTAUS':
         const uusiVastaus = "Uusi vastaus"; 
-        dataKopio.tentit[state.tenttiNumero].kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)        
-        return {...state, tentit: dataKopio.tentit};
+        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)        
+        return {...state, tentti: dataKopio.tentti};
       case 'PÄIVITÄ_TALLENNUSTILA':
         return {...state, tallennetaanko: action.payload};
       case 'ASETA_TALLENNETTAVA_DATA':
         return {...state, tallennettavaData: action.payload}
       case 'ALUSTA_DATA':
-        return {...state, tentit: action.payload.tentit, tietoAlustettu: true, 
+        return {...state, tentti: action.payload.tentti, tietoAlustettu: true, 
           tenttiNumero: action.payload.tenttiNumero, opettajaMoodi: action.payload.opettajaMoodi, käyttäjät:action.payload.käyttäjät};
       case 'MUUTA_TENTTINUMERO':
         return {...state, tenttiNumero: action.payload}
@@ -117,7 +118,8 @@ const App = () => {
   useEffect(() => {
     const getData = async () => {
       try{
-        const result = await axios('http://localhost:8080');
+        //const result = await axios.get('http://localhost:8080/testi/${data.tenttinumero}');
+        const result = await axios('http://localhost:8080/');
         console.log("Alustus result:", result.data)
         dispatch({ type: 'ALUSTA_DATA', payload: result.data })
       }catch(error){
@@ -130,12 +132,12 @@ const App = () => {
 
   useEffect(() => {
     if(!data.ensimmäinenKierros){ 
-      console.log("tentit muuttui")
+      console.log("tentti muuttui")
       ajoitettuVaroitus()
     }else {
       dispatch({type: 'EKA_KIERROS_OHI'})
     }
-  },[data.tentit])
+  },[data.tentti])
   
   useEffect(() => {
 
@@ -143,7 +145,7 @@ const App = () => {
       
       try {
         const uusiTallennettavaData = { 
-          tentit: data.tentit,
+          tentti: data.tentti,
           tenttiNumero: data.tenttiNumero,
           opettajaMoodi: data.opettajaMoodi,
           käyttäjät: data.käyttäjät
@@ -166,9 +168,8 @@ const App = () => {
     <div className='Screen'>
       {data.kirjauduttu && 
       <div className='App-header'>
-        <div> Tenttejä: {data.tentit.length} </div>
         <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_TENTTINUMERO', payload:0})}>{tentti1.nimi} </button>
-        <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_TENTTINUMERO', payload:1})}>{tentti2.nimi} </button>
+        {/* <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_TENTTINUMERO', payload:1})}>{tentti2.nimi} </button> */}
         {/* <button className='Nappi' onClick = {() => dispatch({type:'MUUTA_MOODI', payload:!data.opettajaMoodi})}>{data.opettajaMoodi ? "Oppilasmoodiin" : "Opettajamoodiin"} </button> */}
       </div>}
       {!data.kirjauduttu && 
@@ -180,7 +181,7 @@ const App = () => {
       
       {data.kirjauduttu &&
       <div className='Main-content'>
-        <div> {data.tietoAlustettu && <Tentti tentti = {data.tentit[data.tenttiNumero]} moodi={data.opettajaMoodi} dispatch = {dispatch}/>} </div> 
+        <div> {data.tietoAlustettu && <Tentti tentti = {data.tentti} moodi={data.opettajaMoodi} dispatch = {dispatch}/>} </div> 
         {data.opettajaMoodi && <button className='Nappi' onClick={() => {dispatch({type: 'PÄIVITÄ_TALLENNUSTILA', payload:true}); lopetaAjastin()}}>Tallenna tiedot</button>}
       </div>}
       {!data.kirjauduttu &&

@@ -1,13 +1,11 @@
-//import LisääVastaus from './testi';
-
 const fs = require('fs');
-const express = require('express')  
+const express = require('express');
 const cors = require('cors');
 const { findSourceMap } = require('module');
-const app = express()
-const port = 8080
-const { Pool } = require('pg')
-const bodyparser = require('body-parser')
+const app = express();
+const port = 8080;
+const { Pool } = require('pg');
+const bodyparser = require('body-parser');
 
 const pool = new Pool({
   user: 'postgres',
@@ -17,24 +15,41 @@ const pool = new Pool({
   port: 5432,
 })
 
-app.use(cors())  
+app.use(cors());
 app.use(express.json());
 app.use(bodyparser.urlencoded({extended:false}))
 app.use(bodyparser.json())
 
-//const data = fs.readFileSync("./SaveData.json", { encoding: 'utf8', flag: 'r' }); 
+app.get('/', (req, res) => {
+  console.log("testaillaan")
+  //const data = fs.readFileSync("./SaveData.json", { encoding: 'utf8', flag: 'r' }); 
+  res.send("hello")
+})
 
-//täältä on tarkoitus siirrellä metodit toisiin tiedostoihin kunhan kerkeää/saa toimimaan
+app.get('/lataa/:tenttiId', async (req, res,) => {
+  let tentti
+  let kysymykset
+  let vastaukset
 
+  const tenttiId = Number(req.params.tenttiId)
+  //const kysymysId = Number(req.params.kysymysId)
 
-app.get('/', async (req, res) => {
-  console.log("palvelimelta kysellään dataa", req.body)
- /*  try{
-    let result = await pool.query("SELECT * FROM" + req.body.)
-    res.send(result.rows)
+  console.log("Ladataan dataa tietokannasta")
+
+  //vähän kuumottaa noin monta awaitia putkeen
+  try{
+    //result = await pool.query("SELECT ten_nimi, kys_nimi, vas_nimi FROM tentti INNER JOIN kysymys ON tentti.id = kysymys.tentti_id INNER JOIN vastaus ON kysymys.id = vastaus.kysymys_id" )
+    let result = await pool.query("SELECT ten_nimi FROM tentti WHERE id = 1")
+    tentti = result.rows
+    result = await pool.query("SELECT kys_nimi FROM kysymys WHERE tentti_id = 1")
+    kysymykset = result.rows
+    result = await pool.query("SELECT vas_nimi FROM vastaus WHERE kysymys_id = 12 OR kysymys_id = 13 OR kysymys_id = 18")
+    vastaukset = result.rows
+    console.log(tentti, kysymykset, vastaukset)
+    res.send({tentti, kysymykset, vastaukset})
   }catch(err){
     res.status(500).send(err)
-  } */
+  } 
 })
 
 app.get('/tentti', async (req, res) => {
@@ -47,6 +62,17 @@ app.get('/tentti', async (req, res) => {
   }
 })
 
+app.get('/testi/', async (req, res) => {
+  console.log("testi")
+  res.send("kukkuu")
+  /* try{
+    let result = await pool.query("SELECT * FROM tentti")
+    res.send(result.rows)
+  }catch(err){
+    res.status(500).send(err)
+  } */
+})
+
 app.post('/tentti', async (req, res) => {
   console.log("Tenttiä lisäämässä")
   try{
@@ -55,7 +81,6 @@ app.post('/tentti', async (req, res) => {
   }catch(err){
     res.status(500).send(err)
   }
-
 })
 
 app.delete('/tentti', async (req, res) => {
