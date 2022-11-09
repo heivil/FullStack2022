@@ -12,8 +12,8 @@ const Kysymys = (props) => {
         kysymys: event.target.value, 
         kysymysIndex: props.kysymysIndex,
         tentti: props.tentti
-      }})}} value = {props.kysymys.kysymys}/>
-      <div> {props.kysymys.kysymys} </div>
+      }})}} value = {props.kysymys.kys_nimi}/>
+      <div> {props.kysymys.kys_nimi} </div>
             {props.kysymys.vastaukset.map((vastaus, index) => 
             <div key={index}> 
             <Vastaus vastaus = {vastaus} dispatch = {props.dispatch} kysymysIndex = {props.kysymysIndex} vastausIndex = {index} moodi={props.moodi}/> 
@@ -23,7 +23,7 @@ const Kysymys = (props) => {
             <img className="Isompi-image-nappi" src={trash} alt="Poista kysymys" onClick={(event)=>
             {props.dispatch({type: 'POISTA_KYSYMYS', payload: {kysymysIndex: props.kysymysIndex}})}}/>
             </>
-            : <><div> {props.kysymys.kysymys} </div>
+            : <><div> {props.kysymys.kys_nimi} </div>
             {props.kysymys.vastaukset.map((vastaus, index) => 
             <div key={index}> 
             <Vastaus vastaus = {vastaus} dispatch = {props.dispatch} kysymysIndex = {props.kysymysIndex} vastausIndex = {index} moodi={props.moodi}/> 

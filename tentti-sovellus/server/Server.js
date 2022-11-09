@@ -26,31 +26,36 @@ app.get('/', (req, res) => {
   res.send("hello")
 })
 
-app.get('/lataa/:tenttiId', async (req, res,) => {
-  let tentti
-  let kysymykset
-  let vastaukset
-
-  const tenttiId = Number(req.params.tenttiId)
-  //const kysymysId = Number(req.params.kysymysId)
+app.get('/lataa', async (req, res,) => {
+  let tentti = {}
+  let kysymykset = []
 
   console.log("Ladataan dataa tietokannasta")
-
-  //vähän kuumottaa noin monta awaitia putkeen
   try{
-    //result = await pool.query("SELECT ten_nimi, kys_nimi, vas_nimi FROM tentti INNER JOIN kysymys ON tentti.id = kysymys.tentti_id INNER JOIN vastaus ON kysymys.id = vastaus.kysymys_id" )
-    let result = await pool.query("SELECT ten_nimi FROM tentti WHERE id = 1")
-    tentti = result.rows
-    result = await pool.query("SELECT kys_nimi FROM kysymys WHERE tentti_id = 1")
-    kysymykset = result.rows
-    result = await pool.query("SELECT vas_nimi FROM vastaus WHERE kysymys_id = 12 OR kysymys_id = 13 OR kysymys_id = 18")
-    vastaukset = result.rows
-    console.log(tentti, kysymykset, vastaukset)
-    res.send({tentti, kysymykset, vastaukset})
+    await pool.query('BEGIN')
+    const nimi = await pool.query("SELECT ten_nimi FROM tentti WHERE tentti.id = 1")
+    tentti.ten_nimi = nimi.rows[0].ten_nimi
+    const kys = await pool.query("SELECT kys_nimi, id FROM kysymys WHERE tentti_id = 1")
+    kysymykset = kys.rows
+    const vas = await pool.query("SELECT vas_nimi, kysymys_id FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id = 1")
+    tentti.kysymykset = kysymykset
+    for(i = 0; i < vas.rowCount; i++){
+      for(j = 0; j < kysymykset.length; j++){
+        //console.log(kysymykset)
+        if(kysymykset[j].id === vas.rows[i].kysymys_id){
+          kysymykset[j].vastaukset === undefined && (kysymykset[j].vastaukset = [])
+          kysymykset[j].vastaukset.push(vas.rows[i])
+        }
+      }
+    }
+    await pool.query('COMMIT')
+    res.send(tentti)
   }catch(err){
+    await pool.query('ROLLBACK')
     res.status(500).send(err)
   } 
 })
+
 
 app.get('/tentti', async (req, res) => {
   console.log("Palvelimelta kysytään tenttiä")
@@ -60,17 +65,6 @@ app.get('/tentti', async (req, res) => {
   }catch(err){
     res.status(500).send(err)
   }
-})
-
-app.get('/testi/', async (req, res) => {
-  console.log("testi")
-  res.send("kukkuu")
-  /* try{
-    let result = await pool.query("SELECT * FROM tentti")
-    res.send(result.rows)
-  }catch(err){
-    res.status(500).send(err)
-  } */
 })
 
 app.post('/tentti', async (req, res) => {
