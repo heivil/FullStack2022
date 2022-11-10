@@ -26,38 +26,73 @@ app.get('/', (req, res) => {
   res.send("hello")
 })
 
-app.get('/lataa', async (req, res,) => {
+app.get('/lataaTentti/:tenttiId', async (req, res,) => { 
   let tentti = {}
   let kysymykset = []
 
   console.log("Ladataan dataa tietokannasta")
   try{
-    await pool.query('BEGIN')
-    const nimi = await pool.query("SELECT ten_nimi FROM tentti WHERE tentti.id = 1")
+    const nimi = await pool.query(`SELECT ten_nimi FROM tentti WHERE id = ${req.params.tenttiId}`)
     tentti.ten_nimi = nimi.rows[0].ten_nimi
-    const kys = await pool.query("SELECT kys_nimi, id FROM kysymys WHERE tentti_id = 1")
+    const kys = await pool.query(`SELECT kys_nimi, id FROM kysymys WHERE tentti_id = ${req.params.tenttiId}`)
     kysymykset = kys.rows
-    const vas = await pool.query("SELECT vas_nimi, kysymys_id FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id = 1")
+    const vas = await pool.query(`SELECT vas_nimi, kysymys_id FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id = ${req.params.tenttiId}`)
     tentti.kysymykset = kysymykset
     for(i = 0; i < vas.rowCount; i++){
       for(j = 0; j < kysymykset.length; j++){
-        //console.log(kysymykset)
         if(kysymykset[j].id === vas.rows[i].kysymys_id){
           kysymykset[j].vastaukset === undefined && (kysymykset[j].vastaukset = [])
           kysymykset[j].vastaukset.push(vas.rows[i])
         }
       }
-    }
-    await pool.query('COMMIT')
+    } 
     res.send(tentti)
   }catch(err){
-    await pool.query('ROLLBACK')
     res.status(500).send(err)
   } 
 })
 
+app.get('/kirjaudu/:tunnus/:salasana', async (req, res) => {
+  console.log("kirjaudutaan", req.params.tunnus)
+  try {
+    let result = await pool.query(`SELECT tunnus, salasana, tentti_id, onko_admin FROM kayttaja WHERE tunnus = '${req.params.tunnus}' AND salasana = '${req.params.salasana}'`)
+    if (result.rows[0].tunnus === req.params.tunnus && result.rows[0].salasana === req.params.salasana) {
+      //voi kirjautua
+      res.send(result.rows[0])
+    }else{
+      res.send("väärä tunnus tai salasana")
+    }
+  }catch (err){
+    res.status(500).send(err)
+  }
+})
 
-app.get('/tentti', async (req, res) => {
+app.get('/tarkistaKayttaja/:tunnus' ,async (req, res) => {
+  console.log("tarkistetaan käyttäjätunnus")
+  try {
+    let onVapaa = true
+    let result = await pool.query(`SELECT tunnus FROM kayttaja`)
+    if (result.rows.filter(käyttäjä => käyttäjä.tunnus === req.params.tunnus).length > 0) {
+      onVapaa = false
+    }
+    res.send(onVapaa)
+  }catch (err){
+    res.status(500).send(err)
+  }
+})
+
+app.post('/rekisteroi', async (req, res) => {
+  console.log("lisätään käyttäjää")
+  try {
+    let result = await pool.query("INSERT INTO kayttaja (tentti_id, tunnus, salasana, onko_admin) VALUES ($1, $2, $3, $4)", 
+    [req.body.tentti_id, req.body.tunnus, req.body.salasana, req.body.onko_admin])
+    res.send(result.rows)
+  } catch (err) {
+    res.status(500).send(err)
+  }
+})
+
+/* app.get('/tentti', async (req, res) => {
   console.log("Palvelimelta kysytään tenttiä")
   try{
     let result = await pool.query("SELECT * FROM tentti")
@@ -83,6 +118,16 @@ app.delete('/tentti', async (req, res) => {
     let result = await pool.query("DELETE FROM tentti WHERE id = " + req.body.id )
     res.send(result)
   }catch (err){
+    res.status(500).send(err)
+  }
+})
+
+app.get('/kysymys', async (req, res) => {
+  console.log("Palvelimelta kysytään kysymystä")
+  try{
+    let result = await pool.query("SELECT * FROM kysymys")
+    res.send(result.rows)
+  }catch(err){
     res.status(500).send(err)
   }
 })
@@ -137,18 +182,7 @@ app.post('/vastaus', async (req, res) => {
   } catch (err) {
     res.status(500).send(err)
   }
-})
-
-app.post('/kayttaja', async (req, res) => {
-  console.log("lisätään käyttäjää")
-  try {
-    let result = await pool.query("INSERT INTO käyttäjä (tentti_id, nimi, käyttäjätunnus, salasana, onko_admin) VALUES ($1, $2, $3, $4, $5)", 
-    [req.body.tentti_id, req.body.nimi, req.body.käyttäjätunnus, req.body.salasana, req.body.onko_admin])
-    res.status(200).send(result)
-  } catch (err) {
-    res.status(500).send(err)
-  }
-})
+})*/
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

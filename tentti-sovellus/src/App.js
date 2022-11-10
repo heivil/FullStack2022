@@ -6,10 +6,11 @@ import KirjauduRuutu from './Kirjaudu';
 
 const App = () => {
 
-  let defaultTentti = {ten_nimi:"Default tentti", kysymykset:[{kys_nimi: "Kysymys", id: 0, vastaukset: [{vas_nimi: "Vastaus 1", kysymys_id: 0}]}]}
-  
+  const defaultTentti = {ten_nimi:"Default tentti", kysymykset:[{kys_nimi: "Kysymys", id: 0, vastaukset: [{vas_nimi: "Vastaus 1", kysymys_id: 0}]}]}
+  const defaultKäyttäjä = {käyttäjätunnus: "", salasana: "", tentti_id: 0, onko_admin: false}
+
   //tietoalustettu, kirjauduttu ja opettajamoodi on true testausta varten. älä unohda!***********************************************************************
-  const[data, dispatch] = useReducer(reducer, {tentti: defaultTentti, tenttiNumero: 0, tallennetaanko: false, tietoAlustettu: true, 
+  const[data, dispatch] = useReducer(reducer, {tentti: defaultTentti, tenttiNumero: 1, tallennetaanko: false, tietoAlustettu: true, 
     opettajaMoodi: true, ensimmäinenKierros: true, kirjauduttu: true, kirjauduRuutu: true, tallennettavaData:{}, käyttäjät:[]});
   const[ajastin, setAjastin] = useState()
 
@@ -66,7 +67,6 @@ const App = () => {
       case 'EKA_KIERROS_OHI':
         return{...state, ensimmäinenKierros: false}
       case 'KIRJAUDU':
-        
         let kirjaudutaanko = false;
         let kirjautuja={tunnus: "", salasana: "", admin: false};
         for(let i = 0; i<state.käyttäjät.length; i++){
@@ -79,7 +79,6 @@ const App = () => {
         if(kirjaudutaanko === false) alert("Väärä tunnus tai salasana.");
         return{...state, kirjauduttu: kirjaudutaanko, opettajaMoodi:kirjautuja.admin}
       case 'REKISTERÖIDY':
-        console.log(state.käyttäjät)
         const uusiKäyttäjä = {tunnus: action.payload.tunnus, salasana:action.payload.salasana, admin:action.payload.admin}
         let tunnusVapaana = true
         for(let i = 0; i<state.käyttäjät.length; i++){
@@ -103,7 +102,7 @@ const App = () => {
   useEffect(() => {
     const getData = async () => {
       try{
-        const result = await axios('http://localhost:8080/lataa');
+        const result = await axios.get(`http://localhost:8080/lataaTentti/${data.tenttiNumero}` );
         console.log("Alustus result:", result.data)
         dispatch({ type: 'ALUSTA_DATA', payload: result.data })
       }catch(error){
