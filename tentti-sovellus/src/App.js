@@ -11,7 +11,7 @@ const App = () => {
 
   //tietoalustettu, kirjauduttu ja opettajamoodi on true testausta varten. älä unohda!***********************************************************************
   const[data, dispatch] = useReducer(reducer, {tentti: defaultTentti, tenttiNumero: 1, tallennetaanko: false, tietoAlustettu: true, 
-    opettajaMoodi: true, ensimmäinenKierros: true, kirjauduttu: true, kirjauduRuutu: true, tallennettavaData:{}, käyttäjät:[]});
+    opettajaMoodi: true, ensimmäinenKierros: true, kirjauduttu: true, kirjauduRuutu: true, tallennettavaData:{}, käyttäjä:{}});
   const[ajastin, setAjastin] = useState()
 
   function ajoitettuVaroitus(){
@@ -74,7 +74,7 @@ const App = () => {
             kirjaudutaanko = true
             kirjautuja = state.käyttäjät[i]
             break;
-          }        
+          }
         }
         if(kirjaudutaanko === false) alert("Väärä tunnus tai salasana.");
         return{...state, kirjauduttu: kirjaudutaanko, opettajaMoodi:kirjautuja.admin}
@@ -102,7 +102,7 @@ const App = () => {
   useEffect(() => {
     const getData = async () => {
       try{
-        const result = await axios.get(`http://localhost:8080/lataaTentti/${data.tenttiNumero}` );
+        const result = await axios.get(`http://localhost:8080/tentti/${data.tenttiNumero}` );
         console.log("Alustus result:", result.data)
         dispatch({ type: 'ALUSTA_DATA', payload: result.data })
       }catch(error){
