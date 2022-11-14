@@ -29,32 +29,44 @@ app.post('/rekisteroi', (req, res) => {
   komennot.rekisteröi(req, res)
 })
 
-app.post('/lisääTentti', async (req, res) => {
+app.post('/lisaaTentti', async (req, res) => {
     komennot.lisääTentti(req, res)
 })
 
-app.delete('/poistaTentti', async (req, res) => {
-  poistaTentti(res, req)
+app.patch('/muutaTentti/:id', async (req, res) =>{
+  komennot.muutaTentti(req, res)
 })
 
-app.get('/heaKysymysTenttiIdllä', async (req, res) => {
-  komennot.haeKysymysTenttiIdllä(res, req)
+app.delete('/poistaTentti/:id', async (req, res) => {
+  poistaTentti(req, res)
 })
 
-app.post('/lisääKysymys', async (req, res) => {
-  komennot.lisääKysymys(res, req)
+app.get('/heaKysymysTenttiIdllä/:id', async (req, res) => {
+  komennot.haeKysymysTenttiIdllä(req, res)
 })
 
-app.delete('/poistaKysymys', async (req, res) => {
-  komennot.poistaKysymys(res, req)
+app.post('/lisaaKysymys/:kys_nimi/tentti/:tentti_id', async (req, res) => {
+  komennot.lisääKysymys(req, res)
 })
 
-app.post('/lisääVastaus', async (req, res) => {
-  komennot.lisääVastaus(res, req)
+app.patch('/muutaKysymys/id/:id/kys_nimi/:kys_nimi/tentti_id', async (req, res) =>{
+  komennot.muutaKysymys(req, res)
 })
 
-app.delete('/poistaVastaus', async (req, res) => {
-  komennot.poistaVastaus(res, req)
+app.delete('/poistaKysymys/:id', async (req, res) => {
+  komennot.poistaKysymys(req, res)
+})
+
+app.post('/lisaaVastaus/:vas_nimi/kysymys_id/:kysymys_id/pistemaara/:pistemaara/onko_oikein/:onko_oikein', async (req, res) => {
+  komennot.lisääVastaus(req, res)
+})
+
+app.patch('/muutaVastaus/id/:id/vas_nimi/:vas_nimi/kysymys_id/:kysymys_id/pistemaara/:pistemaara/onko_oikein/:onko_oikein', async (req, res) =>{
+  komennot.muutaVastaus(req, res)
+})
+
+app.delete('/poistaVastaus/id/:id', async (req, res) => {
+  komennot.poistaVastaus(req, res)
 })
 
 

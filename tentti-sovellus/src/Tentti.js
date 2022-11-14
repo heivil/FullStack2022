@@ -6,7 +6,7 @@ const Tentti = (props) => {
     <div>
       <div>Tentti: {props.tentti.ten_nimi} </div><br/>
       <div>Kysymykset: </div>
-      <div>{props.tentti.kysymykset.map((kysymys, index) =>
+      <div>{props.tentti.kysymykset !== undefined && props.tentti.kysymykset.map((kysymys, index) =>
         <Kysymys key = {index} kysymys={kysymys} dispatch = {props.dispatch} kysymysIndex = {index} tentti = {props.tentti} moodi={props.moodi}/>)} 
         {props.moodi && 
         <>
