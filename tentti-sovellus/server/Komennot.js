@@ -98,11 +98,19 @@ const lisääTentti = async (req, res) => {
 
 const poistaTentti = async (req, res) => {
   console.log("poistamassa tenttiä")
+  const client = await pool.connect()
   try{
-    let result = await pool.query("DELETE FROM tentti WHERE id = " + req.params.id )
-    res.send(result)
+    await client.query('BEGIN')
+    await client.query(`DELETE FROM vastaus USING kysymys WHERE vastaus.kysymys_id = kysymys.id AND kysymys.tentti_id = ${req.params.id}`)
+    await client.query(`DELETE FROM kysymys WHERE tentti_id = ${req.params.id}`)
+    await client.query(`DELETE FROM tentti WHERE id = ${req.params.id}`)
+    res.status(200).send("Tentti ja sen kysymykset ja vastaukset on poistettu")
+    await client.query('COMMIT')
   }catch (err){
     res.status(500).send(err)
+    await client.query('ROLLBACK')
+  }finally{
+    client.release()
   }
 }
 
@@ -149,11 +157,18 @@ const muutaKysymys = async (req, res) => {
 
 const poistaKysymys = async (req, res) => {
   console.log("poistamassa kysymystä")
+  const client = await pool.connect()
   try{
-    let result = await pool.query("DELETE FROM kysymys WHERE id = " + req.params.id )
-    res.send(result)
+    await client.query('BEGIN')
+    let delVas = await client.query(`DELETE FROM vastaus WHERE kysymys_id = ${req.params.id}`)
+    let delKys = await client.query(`DELETE FROM kysymys WHERE id = ${req.params.id}`)
+    res.status(200).send("Kysymys ja sen vastaukset poistettu")
+    await client.query('COMMIT')
   }catch (err){
     res.status(500).send(err)
+    await client.query('ROLLBACK')
+  }finally{
+    client.release()
   }
 }
 
@@ -189,7 +204,7 @@ console.log("poistamassa vastausta")
 }
 
 /* const esmerkki = async (req, res) => {
-
+DELETE FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id= ${req.params.id}
 } */
 
 module.exports = {

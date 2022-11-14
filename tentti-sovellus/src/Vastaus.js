@@ -10,7 +10,7 @@ const Vastaus = (props) => {
         {props.dispatch({type: 'VASTAUS_MUUTTUI', 
         payload: {
           vastaus: event.target.value,
-          vastausIndex : props.vastausIndex,
+          vastausIndex: props.vastausIndex,
           kysymysIndex: props.kysymysIndex
         }})}} value = {props.vastaus.vas_nimi}/>
       </div>
@@ -18,7 +18,6 @@ const Vastaus = (props) => {
         props.dispatch({type: 'POISTA_VASTAUS', payload: {kysymysIndex: props.kysymysIndex, vastausIndex: props.vastausIndex}})}}/>
       </>
       : <div> {props.vastaus.vas_nimi} </div>}
-
     </div>
   );
 }

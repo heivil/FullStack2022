@@ -30,15 +30,15 @@ app.post('/rekisteroi', (req, res) => {
 })
 
 app.post('/lisaaTentti', async (req, res) => {
-    komennot.lisääTentti(req, res)
+  komennot.lisääTentti(req, res)
 })
 
 app.patch('/muutaTentti/:id', async (req, res) =>{
   komennot.muutaTentti(req, res)
 })
-
-app.delete('/poistaTentti/:id', async (req, res) => {
-  poistaTentti(req, res)
+ 
+app.delete('/poistaTentti/id/:id', async (req, res) => {
+  komennot.poistaTentti(req, res)
 })
 
 app.get('/heaKysymysTenttiIdllä/:id', async (req, res) => {
@@ -53,7 +53,7 @@ app.patch('/muutaKysymys/id/:id/kys_nimi/:kys_nimi/tentti_id', async (req, res) 
   komennot.muutaKysymys(req, res)
 })
 
-app.delete('/poistaKysymys/:id', async (req, res) => {
+app.delete('/poistaKysymys/id/:id', async (req, res) => {
   komennot.poistaKysymys(req, res)
 })
 
