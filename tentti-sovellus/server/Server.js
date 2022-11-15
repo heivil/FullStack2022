@@ -13,15 +13,15 @@ app.use(express.json());
 /* app.use(bodyparser.urlencoded({extended:false}))
 app.use(bodyparser.json()) */
 
-app.get('/tentti/:tenttiId', (req, res,) => { 
+app.get('/tentti/id/:tentti_id', (req, res,) => { 
   komennot.lataaTenttiIdllä(req, res)
 })
 
-app.get('/kirjaudu/:tunnus/:salasana', (req, res) => {
+app.get('/kirjaudu/tunnus/:tunnus/salasana/:salasana', (req, res) => {
   komennot.kirjaudu(req, res)
 })
 
-app.get('/tarkistaTunnus/:tunnus', (req, res) => {
+app.get('/tarkistaTunnus/tunnus/:tunnus', (req, res) => {
   komennot.tarkistaTunnus(req, res)
 })
 
@@ -33,7 +33,7 @@ app.post('/lisaaTentti', async (req, res) => {
   komennot.lisääTentti(req, res)
 })
 
-app.patch('/muutaTentti/:id', async (req, res) =>{
+app.patch('/muutaTentti/id/:id', async (req, res) =>{
   komennot.muutaTentti(req, res)
 })
  
@@ -41,11 +41,11 @@ app.delete('/poistaTentti/id/:id', async (req, res) => {
   komennot.poistaTentti(req, res)
 })
 
-app.get('/heaKysymysTenttiIdllä/:id', async (req, res) => {
+app.get('/heaKysymysTenttiIdllä/id/:id', async (req, res) => {
   komennot.haeKysymysTenttiIdllä(req, res)
 })
 
-app.post('/lisaaKysymys/:kys_nimi/tentti/:tentti_id', async (req, res) => {
+app.post('/lisaaKysymys/kysymys/:kys_nimi/tentti/:tentti_id', async (req, res) => {
   komennot.lisääKysymys(req, res)
 })
 
@@ -57,11 +57,11 @@ app.delete('/poistaKysymys/id/:id', async (req, res) => {
   komennot.poistaKysymys(req, res)
 })
 
-app.post('/lisaaVastaus/:vas_nimi/kysymys_id/:kysymys_id/pistemaara/:pistemaara/onko_oikein/:onko_oikein', async (req, res) => {
+app.post('/lisaaVastaus/vastaus/:vas_nimi/kysymys_id/:kysymys_id/pisteet/:pisteet/onko_oikein/:onko_oikein', async (req, res) => {
   komennot.lisääVastaus(req, res)
 })
 
-app.patch('/muutaVastaus/id/:id/vas_nimi/:vas_nimi/kysymys_id/:kysymys_id/pistemaara/:pistemaara/onko_oikein/:onko_oikein', async (req, res) =>{
+app.patch('/muutaVastaus/id/:id/vas_nimi/:vas_nimi/kysymys_id/:kysymys_id/pisteet/:pisteet/onko_oikein/:onko_oikein', async (req, res) =>{
   komennot.muutaVastaus(req, res)
 })
 

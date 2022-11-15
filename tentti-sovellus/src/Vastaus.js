@@ -9,7 +9,8 @@ const Vastaus = (props) => {
       <div> {props.vastaus.vas_nimi} <input type = "text" onChange={(event) => 
         {props.dispatch({type: 'VASTAUS_MUUTTUI', 
         payload: {
-          vastaus: event.target.value,
+          vastaus: props.vastaus,
+          vas_nimi: event.target.value,
           vastausIndex: props.vastausIndex,
           kysymysIndex: props.kysymysIndex
         }})}} value = {props.vastaus.vas_nimi}/>

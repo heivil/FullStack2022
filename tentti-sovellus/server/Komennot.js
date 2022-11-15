@@ -14,19 +14,19 @@ const lataaTenttiIdllä = async (req, res) => {
   
   console.log("Ladataan dataa tietokannasta")
   try{
-    const nimi = await pool.query(`SELECT ten_nimi FROM tentti WHERE id = ${req.params.tenttiId}`)
-    if(nimi.rows.length > 0){
-      tentti.ten_nimi = nimi.rows[0].ten_nimi
+    const ten = await pool.query(`SELECT * FROM tentti WHERE id = ${req.params.tentti_id}`)
+    if(ten.rows.length > 0){
+      tentti = ten.rows[0]
     }else{
       res.status(404).send("Tenttiä ei löytynyt")
     }
-    const kys = await pool.query(`SELECT kys_nimi, id FROM kysymys WHERE tentti_id = ${req.params.tenttiId}`)
+    const kys = await pool.query(`SELECT * FROM kysymys WHERE tentti_id = ${req.params.tentti_id}`)
     if(kys.rows.length > 0){
       kysymykset = kys.rows
     }else{
       res.status(404).send("Tentin kysymyksiä ei löytynyt")
     }
-    const vas = await pool.query(`SELECT vas_nimi, kysymys_id FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id = ${req.params.tenttiId}`)
+    const vas = await pool.query(`SELECT vastaus.id, kysymys_id, vas_nimi, pisteet, onko_oikein, kys_nimi, tentti_id FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id = ${req.params.tentti_id}`)
     if(vas.rows.length > 0){
       for(i = 0; i < vas.rows.length; i++){
         for(j = 0; j < kysymykset.length; j++){
@@ -175,7 +175,7 @@ const poistaKysymys = async (req, res) => {
 const lisääVastaus = async (req, res) => {
   console.log("vastausta lisäämässä")
   try {
-    let result = await pool.query("INSERT INTO vastaus (vas_nimi, kysymys_id, pistemäärä, onko_oikein) VALUES ($1, $2, $3, $4)", [req.params.vas_nimi, req.params.kysymys_id, req.params.pistemaara, req.params.onko_oikein])
+    let result = await pool.query("INSERT INTO vastaus (vas_nimi, kysymys_id, pisteet, onko_oikein) VALUES ($1, $2, $3, $4)", [req.params.vas_nimi, req.params.kysymys_id, req.params.pisteet, req.params.onko_oikein])
     res.status(200).send(result)
   } catch (err) {
     res.status(500).send(err)
@@ -186,7 +186,7 @@ const muutaVastaus = async (req, res) => {
   console.log("Muutetaan vastauksen tietoja")
   try{
     let result = await pool.query
-    (`UPDATE vastaus SET vas_nimi = '${req.params.vas_nimi}', kysymys_id = ${req.params.kysymys_id}, pistemäärä = ${req.params.pistemaara}, onko_oikein = ${req.params.onko_oikein} WHERE id = ${req.params.id}`)
+    (`UPDATE vastaus SET vas_nimi = '${req.params.vas_nimi}', kysymys_id = ${req.params.kysymys_id}, pisteet = ${req.params.pisteet}, onko_oikein = ${req.params.onko_oikein} WHERE id = ${req.params.id}`)
     res.status(200).send(result)
   }catch(err){
     res.status(500).send(err)
