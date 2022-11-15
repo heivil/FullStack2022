@@ -30,8 +30,8 @@ const lataaTenttiIdllä = async (req, res) => {
     if(vas.rows.length > 0){
       for(i = 0; i < vas.rows.length; i++){
         for(j = 0; j < kysymykset.length; j++){
+          kysymykset[j].vastaukset === undefined && (kysymykset[j].vastaukset = [])
           if(kysymykset[j].id === vas.rows[i].kysymys_id){
-            kysymykset[j].vastaukset === undefined && (kysymykset[j].vastaukset = [])
             kysymykset[j].vastaukset.push(vas.rows[i])
           }
         }

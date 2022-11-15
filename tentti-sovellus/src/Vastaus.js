@@ -16,7 +16,7 @@ const Vastaus = (props) => {
         }})}} value = {props.vastaus.vas_nimi}/>
       </div>
       <img className='Image-nappi' src={trash} alt="Poista vastausvaihtoehto" onClick={() => { 
-        props.dispatch({type: 'POISTA_VASTAUS', payload: {kysymysIndex: props.kysymysIndex, vastausIndex: props.vastausIndex}})}}/>
+        props.dispatch({type: 'POISTA_VASTAUS', payload: {kysymysIndex: props.kysymysIndex, vastausIndex: props.vastausIndex, vastaus: props.vastaus}})}}/>
       </>
       : <div> {props.vastaus.vas_nimi} </div>}
     </div>
