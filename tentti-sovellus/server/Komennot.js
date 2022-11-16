@@ -1,3 +1,7 @@
+const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -46,9 +50,53 @@ const lataaTenttiIdllä = async (req, res) => {
   } 
 }
 
-const kirjaudu = async (req, res) => {
+const kirjaudu = async (req, res, next) => {
   console.log("kirjaudutaan")
+
+  let { tunnus, salasana } = req.body;
+ 
+  let existingUser;
+  let passwordMatch=false;
   try {
+//    existingUser = await User.findOne({ email: email });
+    let result = await pool.query ("SELECT * FROm users WHERE tunnus=$1",[tunnus])
+    existingUser = {salasana:result.rows[0].salasana, tunnus:result.rows[0].tunnus, id:result.rows[0].id};
+    passwordMatch = await bcrypt.compare(salasana, existingUser.salasana)
+
+  } catch {
+    const error = new Error("Error! Jotain meni vikaan.");
+    return next(error);
+  }
+
+
+  if (!existingUser || !passwordMatch) {
+    const error = Error("Väärä tunnus tai salasana");
+    return next(error);
+  }
+  let token;
+  try {
+    //Creating jwt token
+    token = jwt.sign(
+      { id: existingUser.id, tunnus: existingUser.tunnus },
+      "secretkeyappearshere",    //dotenv! -> tätä hyvä käyttää!! 
+      { expiresIn: "1h" }
+    );
+  } catch (err) {
+    console.log(err);
+    const error = new Error("Error! Something went wrong.");
+    return next(error);
+  }
+ 
+  res.status(200).json({
+      success: true,
+      data: {
+        id: existingUser.id,
+        tunnus: existingUser.tunnus,
+        token: token,
+      },
+    });
+
+  /* try {
     let result = await pool.query(`SELECT tunnus, salasana, tentti_id, onko_admin FROM kayttaja WHERE tunnus = '${req.params.tunnus}' AND salasana = '${req.params.salasana}'`)
     if (result.rows[0].tunnus === req.params.tunnus && result.rows[0].salasana === req.params.salasana) {
       //voi kirjautua
@@ -58,7 +106,7 @@ const kirjaudu = async (req, res) => {
     }
   }catch (err){
     res.status(500).send(err)
-  }
+  } */
 }
 
 const tarkistaTunnus = async (req, res) => {
@@ -75,15 +123,45 @@ const tarkistaTunnus = async (req, res) => {
   }
 }
 
-const rekisteröi = async (req, res) =>{
-  console.log("lisätään käyttäjää")
+const rekisteröi = async (req, res, next) =>{
+  const { tunnus, salasana, tentti_id, onko_admin } = req.params;
+  let result; 
+  try {
+
+    let hashed = await bcrypt.hash(salasana, saltRounds)
+    result = await pool.query("INSERT INTO kayttaja (tunnus, salasana, tentti_id, onko_admin) VALUES ($1,$2,$3,$4) RETURNING id",
+    [tunnus, hashed, tentti_id, onko_admin])
+
+  } catch (err){
+    
+    //const error = new Error("Error! Something went wrong.");
+    return next(err);
+  }
+  let token;
+  try {
+    token = jwt.sign(
+      { id: result.rows[0].id, tunnus: tunnus },
+      "secretkeyappearshere",
+      { expiresIn: "1h" }
+    );
+  } catch (err) {
+    const error = new Error("Error! Something went wrong.");
+    return next(error);
+  }
+  res.status(201).json({
+      success: true,
+      data: { id: result.rows[0].id,
+        tunnus: tunnus, token: token },
+    });
+
+  /* console.log("lisätään käyttäjää")
   try {
     let result = await pool.query("INSERT INTO kayttaja (tentti_id, tunnus, salasana, onko_admin) VALUES ($1, $2, $3, $4)", 
     [req.params.tentti_id, req.params.tunnus, req.params.salasana, req.params.onko_admin])
     res.status(200).send(result.rows)
   } catch (err) {
     res.status(500).send(err)
-  }
+  } */
 } 
 
 const lisääTentti = async (req, res) => {
@@ -202,10 +280,6 @@ console.log("poistamassa vastausta")
     res.status(500).send(err)
   }
 }
-
-/* const esmerkki = async (req, res) => {
-DELETE FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id= ${req.params.id}
-} */
 
 module.exports = {
   lataaTenttiIdllä,
