@@ -6,98 +6,69 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const port = 8080;
-const komennot = require("./Komennot");
-const jwt = require("jsonwebtoken");
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
+const login = require("./Komennot/Login");
+const tentit = require("./Komennot/Tentit")
+const kysymykset = require("./Komennot/Kysymykset")
+const vastaukset = require("./Komennot/Vastaukset")
+const verifoi = require("./Verifoi")
 
 app.use(cors());
 app.use(express.json());
 /* app.use(bodyparser.urlencoded({extended:false}))
 app.use(bodyparser.json()) */
 
-// Handling post request
-app.post("/rekisteröi", async (req, res, next) => {
-  komennot.rekisteröi(req, res, next)
-});
-
-// Handling post request
-app.post("/kirjaudu", async (req, res, next) => {
-  komennot.kirjaudu(req, res, next)
-});
-
-
-const verifyToken = (req, res, next) =>{
-
-  const token = req.headers.authorization?.split(' ')[1]; 
-  //Authorization: 'Bearer TOKEN'
-  if(!token)
-  {
-      res.status(200).json({success:false, message: "Error!Token was not provided."});
-  }
-  //Decoding the token
-  const decodedToken = jwt.verify(token,"secretkeyappearshere" );
-  req.decoded = decodedToken
-  next() 
-} 
-
-app.use(verifyToken)
-
-
-app.get('/tentti/id/:tentti_id', (req, res,) => { 
-  komennot.lataaTenttiIdllä(req, res)
+app.post('/rekisteroi/tunnus/:tunnus/salasana/:salasana/tentti_id/:tentti_id/onko_admin/:onko_admin', (req, res) => {
+  login.rekisteröi(req, res)
 })
 
 app.get('/kirjaudu/tunnus/:tunnus/salasana/:salasana', (req, res) => {
-  komennot.kirjaudu(req, res)
+  login.kirjaudu(req, res)
 })
 
-app.get('/tarkistaTunnus/tunnus/:tunnus', (req, res) => {
-  komennot.tarkistaTunnus(req, res)
+//app.use(verifoi.verifyToken)
+
+app.get('/tentti/id/:tentti_id', (req, res,) => { 
+  tentit.lataaTenttiIdllä(req, res)
 })
 
-app.post('/rekisteroi', (req, res) => {
-  komennot.rekisteröi(req, res)
-})
-
-app.post('/lisaaTentti', (req, res) => {
-  komennot.lisääTentti(req, res)
+app.post('/lisaaTentti/nimi/:nimi/min_pisteet/:min_pisteet', (req, res) => {
+  tentit.lisääTentti(req, res)
 })
 
 app.patch('/muutaTentti/id/:id', (req, res) =>{
-  komennot.muutaTentti(req, res)
+  tentit.muutaTentti(req, res)
 })
  
 app.delete('/poistaTentti/id/:id', (req, res) => {
-  komennot.poistaTentti(req, res)
+  tentit.poistaTentti(req, res)
 })
 
 app.get('/heaKysymysTenttiIdllä/id/:id', (req, res) => {
-  komennot.haeKysymysTenttiIdllä(req, res)
+  kysymykset.haeKysymysTenttiIdllä(req, res)
 })
 
 app.post('/lisaaKysymys/kysymys/:kys_nimi/tentti/:tentti_id', (req, res) => {
-  komennot.lisääKysymys(req, res)
+  kysymykset.lisääKysymys(req, res)
 })
 
 app.patch('/muutaKysymys/id/:id/kys_nimi/:kys_nimi/tentti_id', (req, res) =>{
-  komennot.muutaKysymys(req, res)
+  kysymykset.muutaKysymys(req, res)
 })
 
 app.delete('/poistaKysymys/id/:id', (req, res) => {
-  komennot.poistaKysymys(req, res)
+  kysymykset.poistaKysymys(req, res)
 })
 
 app.post('/lisaaVastaus/vastaus/:vas_nimi/kysymys_id/:kysymys_id/pisteet/:pisteet/onko_oikein/:onko_oikein', (req, res) => {
-  komennot.lisääVastaus(req, res)
+  vastaukset.lisääVastaus(req, res)
 })
 
 app.patch('/muutaVastaus/id/:id/vas_nimi/:vas_nimi/kysymys_id/:kysymys_id/pisteet/:pisteet/onko_oikein/:onko_oikein', (req, res) =>{
-  komennot.muutaVastaus(req, res)
+  vastaukset.muutaVastaus(req, res)
 })
 
 app.delete('/poistaVastaus/id/:id', (req, res) => {
-  komennot.poistaVastaus(req, res)
+  vastaukset.poistaVastaus(req, res)
 })
 
 
@@ -105,17 +76,10 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
-/* app.post('/', (req, res) => {
-  console.log("Palvelimelle tallennetaan dataa", req)
-  fs.writeFileSync("./SaveData.json", JSON.stringify(req.body.data));
-  res.send("Tallennetaan")
-}) */
+/* app.use(komennot.varasLähtö)
 
-/* const lisääKysymys = (kysymysObjekti) => {
-  values=[kysymysObjekti.tenttiId, kysymysObjekti.kysymys]
-  try{
-    pool.query("INSERT INTO kysymys (tentti_id, kysymys) VALUES ($1, $2)", values)
-  }catch (err){
-    console.log("Error:",err)
-  }
-} */
+app.get("/testi", komennot.yksi , async (req, res) => {
+  komennot.kaksi(req, res)
+  console.log("kolme")
+  res.send("päästiin perille")
+}); */
