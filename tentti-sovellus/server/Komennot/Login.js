@@ -50,6 +50,48 @@ const kirjaudu = async (req, res, next) => {
 
 }
 
+const verifoiToken = (req, res, next) =>{
+  
+  const token = req.headers.authorization?.split(' ')[1]; 
+  //Authorization: 'Bearer TOKEN'
+  if(!token)
+  {
+      res.status(200).json({success:false, message: "Error!Token was not provided."});
+  }
+  //Decoding the token
+  const decodedToken = jwt.verify(token,"secretkeyappearshere" );
+  //console.log(decodedToken)
+  req.decoded = decodedToken
+  console.log("token: ", req.decoded)
+  next() 
+} 
+
+const onkoAdmin = async (req, res, next) => {
+
+  try {
+    result = await pool.query("SELECT * FROM kayttaja WHERE tunnus = $1 ", [req.decoded?.tunnus])
+    let admin = result.rows[0].onko_admin
+    admin ? next() : res.status(403).send("no access!")
+  }
+  catch (err) {
+    res.status(500).send(err)
+  }
+}
+
+const tarkistaTunnus= async(req, res, next) => {
+  let result;
+  try{
+    result = await pool.query(`SELECT * FROM kayttaja WHERE tunnus = '${req.params.tunnus}'`)
+    if(result.rowCount > 0){
+      res.status(403).send("Käyttäjätunnus varattu")
+    }else {
+      next()
+    }
+  }catch(err){
+    res.status(500).send(err)
+  }
+}
+
 const rekisteröi = async (req, res, next) =>{
   const { tunnus, salasana, tentti_id, onko_admin } = req.params;
   let result; 
@@ -58,13 +100,12 @@ const rekisteröi = async (req, res, next) =>{
     let hashed = await bcrypt.hash(salasana, saltRounds)
     result = await pool.query("INSERT INTO kayttaja (tunnus, salasana, tentti_id, onko_admin) VALUES ($1,$2,$3,$4) RETURNING id",
     [tunnus, hashed, tentti_id, onko_admin])
-
+    res.status(200).send(result.rows)
   } catch (err){
-    
     //const error = new Error("Error! Something went wrong.");
     return next(err);
   }
-  let token;
+  /* let token;
   try {
     token = jwt.sign(
       { id: result.rows[0].id, tunnus: tunnus },
@@ -79,10 +120,13 @@ const rekisteröi = async (req, res, next) =>{
       success: true,
       data: { id: result.rows[0].id,
         tunnus: tunnus, token: token },
-    });
+    }); */
 } 
 
 module.exports={
   kirjaudu,
-  rekisteröi 
+  rekisteröi,
+  verifoiToken,
+  onkoAdmin,
+  tarkistaTunnus
 }

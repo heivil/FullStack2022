@@ -9,10 +9,9 @@ const App = () => {
 /*   const defaultTentti = { ten_nimi: "Default tentti", kysymykset: [{ kys_nimi: "Kysymys", id: 0, vastaukset: [{ vas_nimi: "Vastaus 1", kysymys_id: 0 }] }] }
   const defaultKäyttäjä = { käyttäjätunnus: "", salasana: "", tentti_id: 0, onko_admin: false } */
 
-  //tietoalustettu, kirjauduttu ja opettajamoodi on true testausta varten. älä unohda!***********************************************************************
   const [data, dispatch] = useReducer(reducer, {
-    tentti: {}, tenttiNumero: 1, tallennetaanko: false, tietoAlustettu: true,
-    opettajaMoodi: true, ensimmäinenKierros: true, kirjauduttu: true, kirjauduRuutu: true, käyttäjä: {},
+    tentti: {}, tenttiNumero: 1, tallennetaanko: false, tietoAlustettu: false,
+    opettajaMoodi: false, ensimmäinenKierros: true, kirjauduttu: false, kirjauduRuutu: true, käyttäjä: {}, uusiKäyttäjä: {}, 
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] }, lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
     poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }
   });
@@ -98,19 +97,8 @@ const App = () => {
         if (kirjaudutaanko === false) alert("Väärä tunnus tai salasana.");
         return { ...state, kirjauduttu: kirjaudutaanko, opettajaMoodi: kirjautuja.admin }
       case 'REKISTERÖIDY':
-        const uusiKäyttäjä = { tunnus: action.payload.tunnus, salasana: action.payload.salasana, admin: action.payload.admin }
-        let tunnusVapaana = true
-        for (let i = 0; i < state.käyttäjät.length; i++) {
-          if (state.käyttäjät[i].tunnus === action.payload.tunnus) tunnusVapaana = false
-        }
-        if (tunnusVapaana) {
-          let käyttäjätKopio = JSON.parse(JSON.stringify(state.käyttäjät))
-          käyttäjätKopio.push(uusiKäyttäjä)
-          return { ...state, käyttäjät: käyttäjätKopio, tallennetaanko: true }
-        } else {
-          alert("Tunnus on jo varattu.");
-          return { ...state }
-        }
+        let uusi = { tunnus: action.payload.tunnus, salasana: action.payload.salasana, onko_admin: action.payload.admin }
+        return {...state, uusiKäyttäjä: uusi}
       case 'KIRJAUDU_RUUTU':
         return { ...state, kirjauduRuutu: action.payload }
       default:
@@ -121,16 +109,20 @@ const App = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const result = await axios.get(`http://localhost:8080/tentti/id/${data.tenttiNumero}`);
+        const result = await axios.get(`https://localhost:8080/tentti/id/${data.tenttiNumero}`);
         console.log("Alustus result:", result.data)
         dispatch({ type: 'ALUSTA_DATA', payload: result.data })
       } catch (error) {
         console.log("Virhe alustaessa: ", error)
       }
     }
-    getData()
+    if(!data.ensimmäinenKierros){
+      getData()
+    }else{
+      dispatch({ type: 'EKA_KIERROS_OHI' })
+    }
 
-  }, []);
+  }, [data.kirjauduttu]);
 
   useEffect(() => {
     if (!data.ensimmäinenKierros) {
@@ -157,47 +149,63 @@ const App = () => {
     }
   }, [data.tallennetaanko]);
 
+  useEffect(() => {
+    const rekisteröiUusi = async () => {
+      try{
+        console.log(data.uusiKäyttäjä)
+        const result = await axios.post(`https://localhost:8080/rekisteroi/tunnus/${data.uusiKäyttäjä.tunnus}/salasana/${data.uusiKäyttäjä.salasana}/tentti_id/1/onko_admin/${data.uusiKäyttäjä.onko_admin}`);
+        console.log("Rekisteröinti result:", result.data)
+      }catch(err){
+        console.log("Virhe rekisteröidessä")
+      }
+    }
+
+    if(!data.ensimmäinenKierros){
+      rekisteröiUusi()
+    }
+  }, [data.uusiKäyttäjä])
+
   const välitäMuutokset = async (lisätty, muutettu, poistettu) => {
     if (lisätty.tentit.length > 0) {
-      await axios.post(`http://localhost:8080/`)
+      await axios.post(`https://localhost:8080/`)
     }
 
     if (lisätty.kysymykset.length > 0) {
-      await axios.post(`http://localhost:8080/`)
+      await axios.post(`https://localhost:8080/`)
     }
 
     if (lisätty.vastaukset.length > 0) {
       console.log(lisätty.vastaukset)
       for(let i = 0; i < lisätty.vastaukset.length; i++){
-        await axios.post(`http://localhost:8080/lisaaVastaus/vastaus/${lisätty.vastaukset[i].vas_nimi}/kysymys_id/${lisätty.vastaukset[i].kysymys_id}/pisteet/${lisätty.vastaukset[i].pisteet}/onko_oikein/${lisätty.vastaukset[i].onko_oikein}`)
+        await axios.post(`https://localhost:8080/lisaaVastaus/vastaus/${lisätty.vastaukset[i].vas_nimi}/kysymys_id/${lisätty.vastaukset[i].kysymys_id}/pisteet/${lisätty.vastaukset[i].pisteet}/onko_oikein/${lisätty.vastaukset[i].onko_oikein}`)
       }
     }
 
     if (muutettu.tentit.length > 0) {
-      await axios.patch(`http://localhost:8080/`)
+      await axios.patch(`https://localhost:8080/`)
     }
 
     if (muutettu.kysymykset.length > 0) {
-      await axios.patch(`http://localhost:8080/`)
+      await axios.patch(`https://localhost:8080/`)
     }
 
     if (muutettu.vastaukset.length > 0) {
       for(let i = 0; i < muutettu.vastaukset.length; i++){
-        await axios.patch(`http://localhost:8080/muutaVastaus/id/${muutettu.vastaukset[i].id}/vas_nimi/${muutettu.vastaukset[i].vas_nimi}/kysymys_id/${muutettu.vastaukset[i].kysymys_id}/pisteet/${muutettu.vastaukset[i].pisteet}/onko_oikein/${muutettu.vastaukset[i].onko_oikein}`)
+        await axios.patch(`https://localhost:8080/muutaVastaus/id/${muutettu.vastaukset[i].id}/vas_nimi/${muutettu.vastaukset[i].vas_nimi}/kysymys_id/${muutettu.vastaukset[i].kysymys_id}/pisteet/${muutettu.vastaukset[i].pisteet}/onko_oikein/${muutettu.vastaukset[i].onko_oikein}`)
       }
     }
 
     if (poistettu.tentit.length > 0) {
-      await axios.delete(`http://localhost:8080/`)
+      await axios.delete(`https://localhost:8080/`)
     }
 
     if (poistettu.kysymykset.length > 0) {
-      await axios.delete(`http://localhost:8080/`)
+      await axios.delete(`https://localhost:8080/`)
     }
 
     if (poistettu.vastaukset.length > 0) {
       for(let i = 0; i < poistettu.vastaukset.length; i++){
-        await axios.delete(`http://localhost:8080/poistaVastaus/id/${poistettu.vastaukset[i].id}`)
+        await axios.delete(`https://localhost:8080/poistaVastaus/id/${poistettu.vastaukset[i].id}`)
       }
     }
   }
@@ -224,7 +232,7 @@ const App = () => {
         </div>}
       {!data.kirjauduttu &&
         <div className='Main-content'>
-          <div> {data.tietoAlustettu && <KirjauduRuutu kirjaudu={data.kirjauduRuutu} dispatch={dispatch} />} </div>
+          <div> {<KirjauduRuutu kirjaudu={data.kirjauduRuutu} dispatch={dispatch} />} </div>
 
         </div>}
     </div>
