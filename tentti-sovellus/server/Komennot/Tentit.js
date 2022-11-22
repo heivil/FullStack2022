@@ -4,7 +4,7 @@ const lataaTenttiIdllä = async (req, res) => {
   let tentti = {ten_nimi: "Nimetön tentti"}
   let kysymykset = []
   
-  console.log("Ladataan dataa tietokannasta")
+  console.log("Ladataan dataa tietokannasta", req.params)
   try{
     const ten = await pool.query(`SELECT * FROM tentti WHERE id = ${req.params.tentti_id}`)
     if(ten.rows.length > 0){

@@ -29,11 +29,10 @@ https.createServer(
   },
   app
 ).listen(port, () => {
-  console.log(`serever is runing at port ${port}`);
+  console.log(`Server is runing at port ${port}`);
 });
 
-
-app.post('/rekisteroi/tunnus/:tunnus/salasana/:salasana/tentti_id/:tentti_id/onko_admin/:onko_admin', login.tarkistaTunnus, (req, res) => {
+app.post('/rekisteroi/tunnus/:tunnus/salasana/:salasana/tentti_id/:tentti_id/onko_admin/:onko_admin', login.tarkistaTunnus, (req, res, next) => {
   login.rekisteröi(req, res)
 })
 
@@ -41,9 +40,9 @@ app.get('/kirjaudu/tunnus/:tunnus/salasana/:salasana', (req, res) => {
   login.kirjaudu(req, res)
 })
 
-app.use(login.verifoiToken)
+//app.use(login.verifoiToken)
 
-app.get('/tentti/id/:tentti_id', (req, res,) => { 
+app.get('/tentti/id/:tentti_id/token/:token', login.verifoiToken, (req, res,) => { 
   tentit.lataaTenttiIdllä(req, res)
 })
 

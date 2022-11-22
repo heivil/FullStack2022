@@ -11,10 +11,11 @@ const KirjauduRuutu = (props) => {
       </label><br/>
       {!props.kirjaudu && <label>Admin<input type="checkbox" id="Admin"/></label>}
     </form>
-    <button onClick={() => {props.kirjaudu ? props.dispatch({type: 'KIRJAUDU', payload:{
-      tunnus: document.getElementById('Tunnus').value, 
-      salasana: document.getElementById('Salasana').value, 
-    }}) : 
+    <button onClick={() => {props.kirjaudu ? 
+      props.dispatch({type: 'KIRJAUDU', payload:{
+        tunnus: document.getElementById('Tunnus').value, 
+        salasana: document.getElementById('Salasana').value,
+      }}) : 
     props.dispatch({type: 'REKISTERÖIDY', 
     payload: {
       tunnus: document.getElementById('Tunnus').value, 

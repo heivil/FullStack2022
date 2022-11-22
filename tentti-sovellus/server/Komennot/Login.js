@@ -51,8 +51,9 @@ const kirjaudu = async (req, res, next) => {
 }
 
 const verifoiToken = (req, res, next) =>{
-  
-  const token = req.headers.authorization?.split(' ')[1]; 
+  console.log("testi", req)
+  const token = req.params.token
+  //const token = req.headers.authorization?.split(' ')[1]; 
   //Authorization: 'Bearer TOKEN'
   if(!token)
   {
@@ -71,7 +72,7 @@ const onkoAdmin = async (req, res, next) => {
   try {
     result = await pool.query("SELECT * FROM kayttaja WHERE tunnus = $1 ", [req.decoded?.tunnus])
     let admin = result.rows[0].onko_admin
-    admin ? next() : res.status(403).send("no access!")
+    admin ? next() : res.status(403).send("Ei oikeudet riitä")
   }
   catch (err) {
     res.status(500).send(err)
