@@ -42,17 +42,17 @@ app.get('/kirjaudu/tunnus/:tunnus/salasana/:salasana', (req, res) => {
 
 //app.use(login.verifoiToken)
 
-app.get('/tentti/id/:tentti_id/token/:token', login.verifoiToken, (req, res,) => { 
+app.get('/tentti/id/:tentti_id/token/:token', login.verifoiToken, (req, res) => { 
   tentit.lataaTenttiIdllä(req, res)
 })
 
-app.use(login.onkoAdmin)
+//app.use(login.onkoAdmin)
 
 app.post('/lisaaTentti/nimi/:nimi/min_pisteet/:min_pisteet', (req, res) => {
   tentit.lisääTentti(req, res)
 })
 
-app.patch('/muutaTentti/id/:id', (req, res) =>{
+app.put('/muutaTentti/id/:id', (req, res) =>{
   tentit.muutaTentti(req, res)
 })
  
@@ -68,7 +68,7 @@ app.post('/lisaaKysymys/kysymys/:kys_nimi/tentti/:tentti_id', (req, res) => {
   kysymykset.lisääKysymys(req, res)
 })
 
-app.patch('/muutaKysymys/id/:id/kys_nimi/:kys_nimi/tentti_id', (req, res) =>{
+app.put('/muutaKysymys/id/:id/kys_nimi/:kys_nimi/', (req, res) =>{
   kysymykset.muutaKysymys(req, res)
 })
 
@@ -80,7 +80,7 @@ app.post('/lisaaVastaus/vastaus/:vas_nimi/kysymys_id/:kysymys_id/pisteet/:pistee
   vastaukset.lisääVastaus(req, res)
 })
 
-app.patch('/muutaVastaus/id/:id/vas_nimi/:vas_nimi/kysymys_id/:kysymys_id/pisteet/:pisteet/onko_oikein/:onko_oikein', (req, res) =>{
+app.put('/muutaVastaus/id/:id/vas_nimi/:vas_nimi/kysymys_id/:kysymys_id/pisteet/:pisteet/onko_oikein/:onko_oikein', (req, res) =>{
   vastaukset.muutaVastaus(req, res)
 })
 

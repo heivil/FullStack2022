@@ -11,9 +11,9 @@ const App = () => {
 
   const [data, dispatch] = useReducer(reducer, {
     tentti: {}, tenttiNumero: 1, tallennetaanko: false, tietoAlustettu: false,
-    opettajaMoodi: false, ensimmäinenKierros: true, tenttiNäkymä: false, kirjauduRuutu: true, käyttäjä: {}, uusiKäyttäjä: {}, 
+    opettajaMoodi: true, ensimmäinenKierros: true, tenttiNäkymä: false, kirjauduRuutu: true, käyttäjä: {}, uusiKäyttäjä: {}, 
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] }, lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
-    poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }, token: 'asd'
+    poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }, token: ''
   });
 
   const [ajastin, setAjastin] = useState()
@@ -32,6 +32,7 @@ const App = () => {
     const dataKopio = JSON.parse(JSON.stringify(state))
     switch (action.type) {
       case 'VASTAUS_MUUTTUI':
+
         let muutettuVastaus = action.payload.vastaus
         muutettuVastaus.vas_nimi = action.payload.vas_nimi
         dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].vas_nimi = muutettuVastaus.vas_nimi
@@ -41,59 +42,98 @@ const App = () => {
         }else{
           dataKopio.muutettuData.vastaukset.some(vas => vas.id === muutettuVastaus.id && (vas.vas_nimi = muutettuVastaus.vas_nimi))
         }
-        return dataKopio;
+        return {...state, muutettuData: dataKopio.muutettuData};
+
       case 'KYSYMYS_MUUTTUI':
-        const muutettuKysymys = action.payload.kys_nimi
-        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].kys_nimi = muutettuKysymys
-        return dataKopio;
+
+        const muutettuKysymys = action.payload.kysymys
+        muutettuKysymys.kys_nimi = action.payload.kys_nimi
+        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].kys_nimi = muutettuKysymys.kys_nimi
+        if (!dataKopio.muutettuData.kysymykset.some(kys => kys.id === muutettuKysymys.id)) {
+          dataKopio.muutettuData.kysymykset.push(action.payload.kysymys)
+        }else{
+          dataKopio.muutettuData.kysymykset.some(kys => kys.id === muutettuKysymys.id && (kys.kys_nimi = muutettuKysymys.kys_nimi))
+        }
+        return {...state, muutettuData: dataKopio.muutettuData};
+
       case 'POISTA_KYSYMYS':
-        const kysymyksetKopio = dataKopio.tentti.kysymykset.filter(kys_nimi =>
-          kys_nimi !== dataKopio.tentti.kysymykset[action.payload.kysymysIndex])//virhe, muistappa tarkistaa
+
+        const kysymyksetKopio = dataKopio.tentti.kysymykset.filter(kysymys =>
+          kysymys !== dataKopio.tentti.kysymykset[action.payload.kysymysIndex])
         dataKopio.tentti.kysymykset = kysymyksetKopio
-        return dataKopio;
+        dataKopio.poistettuData.kysymykset.push(action.payload.kysymys)
+        return {...state, tentti: dataKopio.tentti, poistettuData: dataKopio.poistettuData};
+
       case 'POISTA_VASTAUS':
+
         const vastauksetKopio = dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.filter(vastaus =>
           vastaus !== dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
         dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset = vastauksetKopio
         dataKopio.poistettuData.vastaukset.push(action.payload.vastaus)
-        return dataKopio;
+        return {...state, tentti: dataKopio.tentti, poistettuData: dataKopio.poistettuData};
+
       case 'LISÄÄ_KYSYMYS':
-        const uusiKysymys = { kys_nimi: "Uusi kysymys", id: 0, vastaukset: [{ vas_nimi: "Uusi vastaus", kysymys_id: 0 }] }
+
+        const uusiKysymys = {kys_nimi: "Uusi kysymys", tentti_id: action.payload.tentti_id}
+        dataKopio.lisättyData.kysymykset.push(uusiKysymys)
         dataKopio.tentti.kysymykset.push(uusiKysymys)
-        return dataKopio;
+        console.log(dataKopio.tentti)
+        return {...state, tentti:dataKopio.tentti, lisättyData: dataKopio.lisättyData};
+
       case 'LISÄÄ_VASTAUS':
+
         //korjaa pisteet ja onko oikein uusiVastauksessa !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         const uusiVastaus = { vas_nimi: "Uusi vastaus", kysymys_id: action.payload.kysymys_id, pisteet:0, onko_oikein: false }; 
         dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)
         dataKopio.lisättyData.vastaukset.push(uusiVastaus)
-        console.log(dataKopio.lisättyData.vastaukset)
         return {...state, lisättyData: dataKopio.lisättyData , tentti: dataKopio.tentti};
+
       case 'PÄIVITÄ_TALLENNUSTILA':
+
         return {...state, tallennetaanko: action.payload};
+
       case 'TYHJENNÄ_MUUTOKSET':
+
         const tyhjäMuutosObj = { tentit: [], kysymykset: [], vastaukset: []}
         return {...state, muutettuData: tyhjäMuutosObj, poistettuData: tyhjäMuutosObj, lisättyData: tyhjäMuutosObj}
+
       case 'ALUSTA_DATA':
+
         return {
           ...state, tentti: action.payload, tietoAlustettu: true,
           /* tenttiNumero: action.payload.tenttiNumero, opettajaMoodi: action.payload.opettajaMoodi, käyttäjät:action.payload.käyttäjät */
           };
+
       case 'MUUTA_TENTTINUMERO':
+
         return {...state, tenttiNumero: action.payload}
+
       case 'MUUTA_MOODI':
+
         return {...state, opettajaMoodi: action.payload}
+
       case 'EKA_KIERROS_OHI':
+
         return {...state, ensimmäinenKierros: false}
+
       case 'KIRJAUDU':
+
         let kirjautuja = {tunnus: action.payload.tunnus, salasana: action.payload.salasana}
         return {...state, käyttäjä: kirjautuja}
+
       case 'REKISTERÖIDY':
+
         let uusi = { tunnus: action.payload.tunnus, salasana: action.payload.salasana, onko_admin: action.payload.admin }
         return {...state, uusiKäyttäjä: uusi}
+
       case 'KIRJAUDU_RUUTU':
+
         return {...state, kirjauduRuutu: action.payload}
+
       case 'VAIHDA_TENTTINÄKYMÄ':
+
         return {...state, tenttiNäkymä: action.payload.tenttiNäkymä, token: action.payload.token}
+
       default:
         throw new Error("Reduceriin tultiin oudosti.");
     }
@@ -102,7 +142,6 @@ const App = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        console.log("ettätuota", data.token)
         const result = await axios.get(`https://localhost:8080/tentti/id/${data.tenttiNumero}/token/${data.token}`); 
         console.log("Alustus result:", result.data)
         dispatch({ type: 'ALUSTA_DATA', payload: result.data })
@@ -178,12 +217,15 @@ const App = () => {
   }, [data.käyttäjä])
 
   const välitäMuutokset = async (lisätty, muutettu, poistettu) => {
+    console.log("lis",lisätty,"muu", muutettu, "pois", poistettu)
     if (lisätty.tentit.length > 0) {
       await axios.post(`https://localhost:8080/`)
     }
 
     if (lisätty.kysymykset.length > 0) {
-      await axios.post(`https://localhost:8080/`)
+      for(let i = 0; i < lisätty.kysymykset.length; i++){
+        await axios.post(`https://localhost:8080/lisaaKysymys/kysymys/${lisätty.kysymykset[i].kys_nimi}/tentti/${lisätty.kysymykset[i].tentti_id}`)
+      }
     }
 
     if (lisätty.vastaukset.length > 0) {
@@ -193,16 +235,18 @@ const App = () => {
     }
 
     if (muutettu.tentit.length > 0) {
-      await axios.patch(`https://localhost:8080/`)
+      await axios.put(`https://localhost:8080/`)
     }
 
     if (muutettu.kysymykset.length > 0) {
-      await axios.patch(`https://localhost:8080/`)
+      for(let i = 0; i < muutettu.kysymykset.length; i++){
+        await axios.put(`https://localhost:8080/muutaKysymys/id/${muutettu.kysymykset[i].id}/kys_nimi/${muutettu.kysymykset[i].kys_nimi}`)
+      }
     }
 
     if (muutettu.vastaukset.length > 0) {
       for(let i = 0; i < muutettu.vastaukset.length; i++){
-        await axios.patch(`https://localhost:8080/muutaVastaus/id/${muutettu.vastaukset[i].id}/vas_nimi/${muutettu.vastaukset[i].vas_nimi}/kysymys_id/${muutettu.vastaukset[i].kysymys_id}/pisteet/${muutettu.vastaukset[i].pisteet}/onko_oikein/${muutettu.vastaukset[i].onko_oikein}`)
+        await axios.put(`https://localhost:8080/muutaVastaus/id/${muutettu.vastaukset[i].id}/vas_nimi/${muutettu.vastaukset[i].vas_nimi}/kysymys_id/${muutettu.vastaukset[i].kysymys_id}/pisteet/${muutettu.vastaukset[i].pisteet}/onko_oikein/${muutettu.vastaukset[i].onko_oikein}`)
       }
     }
 
@@ -211,7 +255,9 @@ const App = () => {
     }
 
     if (poistettu.kysymykset.length > 0) {
-      await axios.delete(`https://localhost:8080/`)
+      for(let i = 0; i < poistettu.kysymykset.length; i++){
+        await axios.delete(`https://localhost:8080/poistaKysymys/id/${poistettu.kysymykset[i].id}`)
+      }
     }
 
     if (poistettu.vastaukset.length > 0) {

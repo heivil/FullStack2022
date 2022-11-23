@@ -24,7 +24,7 @@ const lisääKysymys = async (req, res) => {
 const muutaKysymys = async (req, res) => {
   console.log("Muutetaan kysymyksen tietoja")
   try{
-    let result = await pool.query(`UPDATE kysymys SET kys_nimi='${req.params.kys_nimi}?', tentti_id=${req.params.tentti_id} WHERE id=${req.params.id}`)
+    let result = await pool.query(`UPDATE kysymys SET kys_nimi='${req.params.kys_nimi}?' WHERE id=${req.params.id}`)
     res.status(200).send(result)
   }catch(err){
     res.status(500).send(err)

@@ -17,13 +17,13 @@ const kirjaudu = async (req, res, next) => {
 
   } catch(err) {
     const error = new Error("Error! Jotain meni vikaan.", err);
-    return next(error);
+    res.status(500).send(err)
   }
 
 
   if (!existingUser || !passwordMatch) {
     const error = Error("Väärä tunnus tai salasana");
-    return next(error);
+    res.status(500).send(error)
   }
   let token;
   try {
@@ -36,7 +36,7 @@ const kirjaudu = async (req, res, next) => {
   } catch (err) {
     console.log(err);
     const error = new Error("Error! Something went wrong.");
-    return next(error);
+    res.status(500).send(err)
   }
  
   res.status(200).json({
@@ -51,7 +51,6 @@ const kirjaudu = async (req, res, next) => {
 }
 
 const verifoiToken = (req, res, next) =>{
-  console.log("testi", req)
   const token = req.params.token
   //const token = req.headers.authorization?.split(' ')[1]; 
   //Authorization: 'Bearer TOKEN'
@@ -104,7 +103,7 @@ const rekisteröi = async (req, res, next) =>{
     res.status(200).send(result.rows)
   } catch (err){
     //const error = new Error("Error! Something went wrong.");
-    return next(err);
+    res.status(500).send(err)
   }
   /* let token;
   try {

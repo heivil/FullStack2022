@@ -22,7 +22,7 @@ const Kysymys = (props) => {
             <img className="Image-nappi" src={plus} alt="Lisää vastausvaihtoehto" onClick={(event)=>
             {props.dispatch({type: 'LISÄÄ_VASTAUS', payload: {kysymysIndex: props.kysymysIndex, kysymys_id: props.kysymys.id}})}}/>
             <img className="Isompi-image-nappi" src={trash} alt="Poista kysymys" onClick={(event)=>
-            {props.dispatch({type: 'POISTA_KYSYMYS', payload: {kysymysIndex: props.kysymysIndex}})}}/>
+            {props.dispatch({type: 'POISTA_KYSYMYS', payload: {kysymysIndex: props.kysymysIndex, kysymys: props.kysymys}})}}/>
             </>
             : <><div> {props.kysymys.kys_nimi} </div>
             {props.kysymys.vastaukset.map((vastaus, index) => 
