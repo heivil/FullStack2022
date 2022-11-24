@@ -15,8 +15,6 @@ const lataaTenttiIdllä = async (req, res) => {
     const kys = await pool.query(`SELECT * FROM kysymys WHERE tentti_id = ${req.params.tentti_id}`)
     if(kys.rows.length > 0){
       kysymykset = kys.rows
-    }else{
-      res.status(404).send("Tentin kysymyksiä ei löytynyt")
     }
     const vas = await pool.query(`SELECT vastaus.id, kysymys_id, vas_nimi, pisteet, onko_oikein, kys_nimi, tentti_id FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id = ${req.params.tentti_id}`)
     if(vas.rows.length > 0){
@@ -28,8 +26,6 @@ const lataaTenttiIdllä = async (req, res) => {
           }
         }
       } 
-    }else{
-      res.status(404).send("Tentin vastauksia ei löytynyt")
     }
     tentti.kysymykset = kysymykset
     
