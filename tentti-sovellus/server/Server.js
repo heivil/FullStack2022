@@ -48,6 +48,10 @@ app.get('/tentti/id/:tentti_id/token/:token', login.verifoiToken, (req, res) => 
 
 //app.use(login.onkoAdmin)
 
+app.get('/tentit/token/:token', login.verifoiToken, (req, res) => { 
+  tentit.lataaTentit(req, res)
+})
+
 app.post('/lisaaTentti/nimi/:nimi/min_pisteet/:min_pisteet', (req, res) => {
   tentit.lisääTentti(req, res)
 })

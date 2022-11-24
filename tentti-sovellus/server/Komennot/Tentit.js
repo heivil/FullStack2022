@@ -9,7 +9,6 @@ const lataaTenttiIdllä = async (req, res) => {
     const ten = await pool.query(`SELECT * FROM tentti WHERE id = ${req.params.tentti_id}`)
     if(ten.rows.length > 0){
       tentti = ten.rows[0]
-      
     }else{
       res.status(404).send("Tenttiä ei löytynyt")
     }
@@ -38,6 +37,23 @@ const lataaTenttiIdllä = async (req, res) => {
   }catch(err){
     res.status(500).send(err)
   } 
+}
+
+const lataaTentit = async (req, res) => {
+  let tentit = {tenttejä: 0, tenttiLista:[]}
+  try{
+    const result = await pool.query(`SELECT id, ten_nimi FROM tentti`) 
+    tentit.tenttejä = result.rows.length
+    if(result.rows.length > 0){
+      for(let i = 0; i < result.rows.length; i++){
+        tentit.tenttiLista.push(result.rows[i])
+      } 
+    }
+    res.status(200).send(tentit)
+  }
+  catch(err){
+    res.status(500).send(err)
+  }
 }
 
 const lisääTentti = async (req, res) => {
@@ -82,5 +98,6 @@ module.exports = {
   lataaTenttiIdllä,
   lisääTentti,
   muutaTentti,
-  poistaTentti
+  poistaTentti,
+  lataaTentit
 }
