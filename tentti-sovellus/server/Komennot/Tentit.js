@@ -43,7 +43,7 @@ const lataaTentit = async (req, res) => {
     if(result.rows.length > 0){
       for(let i = 0; i < result.rows.length; i++){
         tentit.tenttiLista.push(result.rows[i])
-      } 
+      }
     }
     res.status(200).send(tentit)
   }

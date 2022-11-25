@@ -1,4 +1,3 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED='0'
 const fs = require('fs');
 //const { findSourceMap } = require('module');
 //const bodyparser = require('body-parser');
@@ -96,6 +95,9 @@ app.delete('/poistaVastaus/id/:id', (req, res) => {
 /* app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 }) */
+
+
+//process.env.NODE_TLS_REJECT_UNAUTHORIZED='0'
 
 /* var transporter = nodemailer.createTransport({
   service: 'gmail',

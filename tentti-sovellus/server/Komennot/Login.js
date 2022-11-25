@@ -29,7 +29,7 @@ const kirjaudu = async (req, res, next) => {
   try {
     //Creating jwt token
     token = jwt.sign(
-      { id: existingUser.id, tunnus: existingUser.tunnus },
+      { id: existingUser.id, tunnus: existingUser.tunnus }, //<--onko_admin tänne tokeniin!!!
       "secretkeyappearshere",    //dotenv! -> tätä hyvä käyttää!! 
       { expiresIn: "1h" }
     );
@@ -44,7 +44,7 @@ const kirjaudu = async (req, res, next) => {
       data: {
         id: existingUser.id,
         tunnus: existingUser.tunnus,
-        token: token,
+        token: token
       },
     });
 

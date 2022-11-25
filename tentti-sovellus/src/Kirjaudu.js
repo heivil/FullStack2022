@@ -9,19 +9,19 @@ const KirjauduRuutu = (props) => {
       <label>Salasana: <br/>
         <input type="text" id="Salasana"/>
       </label><br/>
+      {!props.kirjaudu && <label>Salasana uudestaan: (eitoimivielä) <br/><input type="text" id="Salasana uudestaan"/></label>}<br/>
       {!props.kirjaudu && <label>Admin<input type="checkbox" id="Admin"/></label>}
     </form>
     <button onClick={() => {props.kirjaudu ? 
-      props.dispatch({type: 'KIRJAUDU', payload:{
+      props.kirjauduSisään({
         tunnus: document.getElementById('Tunnus').value, 
         salasana: document.getElementById('Salasana').value,
-      }}) : 
-    props.dispatch({type: 'REKISTERÖIDY', 
-    payload: {
+      }) : 
+    props.rekisteröiUusi({
       tunnus: document.getElementById('Tunnus').value, 
       salasana: document.getElementById('Salasana').value, 
-      admin: document.getElementById('Admin').checked
-    }})}}>
+      onko_admin: document.getElementById('Admin').checked
+    })}}>
       {props.kirjaudu ? "Kirjaudu sisään" : "Rekisteröidy"}
     </button>
     </div>

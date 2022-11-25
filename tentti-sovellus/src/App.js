@@ -5,6 +5,8 @@ import axios from 'axios'
 import KirjauduRuutu from './Kirjaudu';
 import plus from './plus.png'
 
+//useref --> siirtää fokuksen tiettyyn komponenttiin esim tekstikenttä yms
+
 const App = () => {
 
   /*   const defaultTentti = { ten_nimi: "Default tentti", kysymykset: [{ kys_nimi: "Kysymys", id: 0, vastaukset: [{ vas_nimi: "Vastaus 1", kysymys_id: 0 }] }] }
@@ -12,7 +14,7 @@ const App = () => {
 
   const [data, dispatch] = useReducer(reducer, {
     tentit: {}, tentti: {}, tenttiNumero: 1, tallennetaanko: false, opettajaMoodi: true, ensimmäinenKierros: true, tenttiNäkymä: false,
-    kirjauduRuutu: true, käyttäjä: {}, uusiKäyttäjä: {}, muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
+    kirjauduRuutu: true, käyttäjä: {}, muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] }, poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }, token: ''
   });
 
@@ -115,16 +117,6 @@ const App = () => {
 
         return { ...state, ensimmäinenKierros: false }
 
-      case 'KIRJAUDU':
-
-        let kirjautuja = { tunnus: action.payload.tunnus, salasana: action.payload.salasana }
-        return { ...state, käyttäjä: kirjautuja }
-
-      case 'REKISTERÖIDY':
-
-        let uusi = { tunnus: action.payload.tunnus, salasana: action.payload.salasana, onko_admin: action.payload.admin }
-        return { ...state, uusiKäyttäjä: uusi }
-
       case 'KIRJAUDU_RUUTU':
 
         return { ...state, kirjauduRuutu: action.payload }
@@ -140,7 +132,7 @@ const App = () => {
 
   useEffect(() => {
     
-    const getData = async () => {
+    const getData = async () => { //sama laittaa tämä myös kirjaudu napin tapahtumankäsittelijään
       try {                                                                                     //tallenna token localstorageen
         const resTentti = await axios.get(`https://localhost:8080/tentti/id/${data.tenttiNumero}/token/${data.token}`);
         const resTentit = await axios.get(`https://localhost:8080/tentit/token/${data.token}`);
@@ -183,39 +175,6 @@ const App = () => {
       saveData()
     }
   }, [data.tallennetaanko]);
-
-  useEffect(() => {
-    const rekisteröiUusi = async () => {
-      try {                                                                    //tentti_id on aina tässä 1 tällä hetkellä
-        const result = await axios.post(`https://localhost:8080/rekisteroi/tunnus/${data.uusiKäyttäjä.tunnus}/salasana/${data.uusiKäyttäjä.salasana}/tentti_id/1/onko_admin/${data.uusiKäyttäjä.onko_admin}`);
-        console.log("Rekisteröinti result:", result.data)
-      } catch (err) {
-        console.log("Virhe rekisteröidessä")
-      }
-    }
-
-    if (!data.ensimmäinenKierros) {
-      rekisteröiUusi()
-    }
-  }, [data.uusiKäyttäjä])
-
-  useEffect(() => {
-    const kirjauduSisään = async () => {
-      try {
-        const result = await axios.get(`https://localhost:8080/kirjaudu/tunnus/${data.käyttäjä.tunnus}/salasana/${data.käyttäjä.salasana}`);
-        if (result) {
-          dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, token: result.data.data.token } })
-          console.log("kirjaudu result:", result.data)
-        }
-      } catch (err) {
-        console.log("Virhe kirjautuessa")
-      }
-    }
-
-    if (!data.ensimmäinenKierros) {
-      kirjauduSisään()
-    }
-  }, [data.käyttäjä])
 
   const välitäMuutokset = async (lisätty, muutettu, poistettu) => {
     console.log("lis", lisätty, "muu", muutettu, "pois", poistettu)
@@ -268,6 +227,28 @@ const App = () => {
     }
   }
 
+  const kirjauduSisään = async (käyttäjä) => {
+    try {
+      const result = await axios.get(`https://localhost:8080/kirjaudu/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}`);
+      if (result) {
+        dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, token: result.data.data.token } })
+        console.log("kirjaudu result:", result.data)
+      }
+    } catch (err) {
+      console.log("Virhe kirjautuessa")
+    }
+  }
+
+  const rekisteröiUusi = async (käyttäjä) => {
+    console.log(käyttäjä)
+    try {                                                                    //tentti_id on aina tässä 1 tällä hetkellä
+      const result = await axios.post(`https://localhost:8080/rekisteroi/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}/tentti_id/1/onko_admin/${käyttäjä.onko_admin}`);
+      console.log("Rekisteröinti result:", result.data)
+    } catch (err) {
+      console.log("Virhe rekisteröidessä")
+    }
+  }
+
   return (
     <div className='Screen'>
       {data.tenttiNäkymä &&
@@ -297,7 +278,7 @@ const App = () => {
         </div>}
       {!data.tenttiNäkymä &&
         <div className='Main-content'>
-          <div> {<KirjauduRuutu kirjaudu={data.kirjauduRuutu} dispatch={dispatch} />} </div>
+          <div> {<KirjauduRuutu kirjaudu={data.kirjauduRuutu} kirjauduSisään={kirjauduSisään} rekisteröiUusi={rekisteröiUusi} />} </div>
 
         </div>}
     </div>
