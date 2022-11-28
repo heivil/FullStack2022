@@ -12,7 +12,7 @@ const kirjaudu = async (req, res, next) => {
   let passwordMatch=false;
   try {
     let result = await pool.query(`SELECT * FROM kayttaja WHERE tunnus = '${tunnus}'`)
-    existingUser = {salasana:result.rows[0].salasana, tunnus:result.rows[0].tunnus, id:result.rows[0].id};
+    existingUser = {salasana:result.rows[0].salasana, tunnus:result.rows[0].tunnus, tentti_id:result.rows[0].tentti_id, id:result.rows[0].id};
     passwordMatch = await bcrypt.compare(salasana, existingUser.salasana)
 
   } catch(err) {
@@ -44,6 +44,7 @@ const kirjaudu = async (req, res, next) => {
       data: {
         id: existingUser.id,
         tunnus: existingUser.tunnus,
+        tentti_id: existingUser.tentti_id,
         token: token
       },
     });

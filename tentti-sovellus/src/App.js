@@ -3,7 +3,6 @@ import Tentti from './Tentti';
 import React, { useState, useReducer, useEffect } from 'react';
 import axios from 'axios'
 import KirjauduRuutu from './Kirjaudu';
-import plus from './plus.png'
 
 //useref --> siirtää fokuksen tiettyyn komponenttiin esim tekstikenttä yms
 
@@ -13,7 +12,7 @@ const App = () => {
     const defaultKäyttäjä = { käyttäjätunnus: "", salasana: "", tentti_id: 0, onko_admin: false } */
 
   const [data, dispatch] = useReducer(reducer, {
-    tentit: {}, tentti: {}, tenttiNumero: 1, tallennetaanko: false, opettajaMoodi: true, ensimmäinenKierros: true, tenttiNäkymä: false,
+    tentit: {}, tentti: {}, /* tenttiNumero: 1, */ tallennetaanko: false, opettajaMoodi: true, tenttiNäkymä: false,
     kirjauduRuutu: true, käyttäjä: {}, muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] }, poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }, token: ''
   });
@@ -23,6 +22,7 @@ const App = () => {
   function ajoitettuVaroitus() {
     clearTimeout(ajastin)
     !data.kirjauduRuutu && data.opettajaMoodi && setAjastin(setTimeout(function () { alert("Hälytys, tallenna välillä."); }, 3000));
+    //TODO:laita tallentamaan tässä suoraan?
   }
 
   function lopetaAjastin() {
@@ -36,27 +36,36 @@ const App = () => {
       case 'VASTAUS_MUUTTUI':
 
         let muutettuVastaus = action.payload.vastaus
-        muutettuVastaus.vas_nimi = action.payload.vas_nimi
-        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].vas_nimi = muutettuVastaus.vas_nimi
+        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].vas_nimi = action.payload.vas_nimi //nimi tulee vähän oudosti erillään koko objektista event.target.valuen takia  
         //tarkistetaan onko muutettujen vastausten listalla jo sama vastaus, jos ei pushataan listaan, jos on niin muutetaan vain vas_nimi
         if (!dataKopio.muutettuData.vastaukset.some(vas => vas.id === muutettuVastaus.id)) {
-          dataKopio.muutettuData.vastaukset.push(action.payload.vastaus)
+          dataKopio.muutettuData.vastaukset.push(muutettuVastaus)
         } else {
           dataKopio.muutettuData.vastaukset.some(vas => vas.id === muutettuVastaus.id && (vas.vas_nimi = muutettuVastaus.vas_nimi))
         }
-        return { ...state, muutettuData: dataKopio.muutettuData };
+        return { ...state, tentti: dataKopio.tentti, muutettuData: dataKopio.muutettuData };
 
       case 'KYSYMYS_MUUTTUI':
 
-        const muutettuKysymys = action.payload.kysymys
-        muutettuKysymys.kys_nimi = action.payload.kys_nimi
-        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].kys_nimi = muutettuKysymys.kys_nimi
+        let muutettuKysymys = action.payload.kysymys
+        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].kys_nimi = action.payload.kys_nimi
         if (!dataKopio.muutettuData.kysymykset.some(kys => kys.id === muutettuKysymys.id)) {
-          dataKopio.muutettuData.kysymykset.push(action.payload.kysymys)
+          dataKopio.muutettuData.kysymykset.push(muutettuKysymys)
         } else {
           dataKopio.muutettuData.kysymykset.some(kys => kys.id === muutettuKysymys.id && (kys.kys_nimi = muutettuKysymys.kys_nimi))
         }
-        return { ...state, muutettuData: dataKopio.muutettuData };
+        return { ...state, tentti: dataKopio.tentti, muutettuData: dataKopio.muutettuData };
+
+      case 'TENTTI_MUUTTUI':
+
+        const muutettuTentti = action.payload.tentti
+        dataKopio.tentti.ten_nimi = action.payload.ten_nimi
+        if (!dataKopio.muutettuData.tentit.some(ten => ten.id === muutettuTentti.id)) {
+          dataKopio.muutettuData.tentit.push(muutettuTentti)
+        } else {
+          dataKopio.muutettuData.tentit.some(ten => ten.id === muutettuTentti.id && (ten.ten_nimi = muutettuTentti.ten_nimi))
+        }
+        return { ...state, tentti: dataKopio.tentti, muutettuData: dataKopio.muutettuData };
 
       case 'POISTA_KYSYMYS':
 
@@ -76,15 +85,18 @@ const App = () => {
 
       case 'LISÄÄ_TENTTI':
         
-        
-        return {...state, tentit: action.payload}
+        const uusiTentti = { ten_nimi: "Uusi tentti", kysymykset: [{ kys_nimi: "Kysymys", id: 0, vastaukset: [{ vas_nimi: "Vastaus 1", kysymys_id: 0 }] }]}
+        dataKopio.lisättyData.tentit.push(uusiTentti)
+        dataKopio.tentti = uusiTentti
+        console.log("tentti lisätty: ", dataKopio.tentti)
+        return { ...state, tentti: dataKopio.tentti, lisättyData: dataKopio.lisättyData };
 
       case 'LISÄÄ_KYSYMYS':
 
-        const uusiKysymys = { kys_nimi: "Uusi kysymys", tentti_id: action.payload.tentti_id }
+        const uusiKysymys = { kys_nimi: "Uusi kysymys", tentti_id: action.payload.tentti_id, vastaukset:[] }
         dataKopio.lisättyData.kysymykset.push(uusiKysymys)
         dataKopio.tentti.kysymykset.push(uusiKysymys)
-        console.log(dataKopio.tentti)
+        console.log("kysymys lisätty", dataKopio.tentti)
         return { ...state, tentti: dataKopio.tentti, lisättyData: dataKopio.lisättyData };
 
       case 'LISÄÄ_VASTAUS':
@@ -113,10 +125,6 @@ const App = () => {
 
         return {...state, tentti: action.payload.tentti, tentit: action.payload.tentit, tietoAlustettu: true,};
 
-      case 'EKA_KIERROS_OHI':
-
-        return { ...state, ensimmäinenKierros: false }
-
       case 'KIRJAUDU_RUUTU':
 
         return { ...state, kirjauduRuutu: action.payload }
@@ -131,34 +139,11 @@ const App = () => {
   }
 
   useEffect(() => {
-    
-    const getData = async () => { //sama laittaa tämä myös kirjaudu napin tapahtumankäsittelijään
-      try {                                                                                     //tallenna token localstorageen
-        const resTentti = await axios.get(`https://localhost:8080/tentti/id/${data.tenttiNumero}/token/${data.token}`);
-        const resTentit = await axios.get(`https://localhost:8080/tentit/token/${data.token}`);
-        console.log("Alustus result:", resTentti.data, resTentit.data)
-        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data, tentit: resTentit.data } })
-        
-      } catch (error) {
-        console.log("Virhe alustaessa: ", error)
-      }
-    }
-    if (!data.ensimmäinenKierros) {
-      getData()
-    } else {
-      dispatch({ type: 'EKA_KIERROS_OHI' })
-    }
-
-  }, [data.tenttiNäkymä, data.tenttiNumero]);
-
-  useEffect(() => {
-    if (!data.ensimmäinenKierros) {
+    if (data.muutettuData.length > 0 || data.poistettuData.length > 0 || data.lisättyData.length > 0) {
       console.log("tentti muuttui")
       ajoitettuVaroitus()
-    } else {
-      dispatch({ type: 'EKA_KIERROS_OHI' })
     }
-  }, [data.muutettuData, data.lisättyData, data.poistettuData]) //kutsuu tätä myös tallennuksen jälkeen kun listat tyhjennetään. muista korjata
+  }, [data.muutettuData, data.lisättyData, data.poistettuData]) 
 
   useEffect(() => {
     const saveData = () => {
@@ -178,8 +163,11 @@ const App = () => {
 
   const välitäMuutokset = async (lisätty, muutettu, poistettu) => {
     console.log("lis", lisätty, "muu", muutettu, "pois", poistettu)
+
     if (lisätty.tentit.length > 0) {
-      await axios.post(`https://localhost:8080/`)
+      for (let i = 0; i < lisätty.tentit.length; i++) {
+        await axios.post(`https://localhost:8080/lisaaTentti/nimi/${lisätty.tentit[i].ten_nimi}/min_pisteet/10`)//täällä hard koodattu 10 pistemääräksi!!!
+      }
     }
 
     if (lisätty.kysymykset.length > 0) {
@@ -195,7 +183,9 @@ const App = () => {
     }
 
     if (muutettu.tentit.length > 0) {
-      await axios.put(`https://localhost:8080/`)
+      /* for (let i = 0; i < muutettu.tentit.length; i++) {
+        await axios.put(`https://localhost:8080/muutaTentti/id/${muutettu.tentit[i].id}/nimi/${muutettu.tentit[i].ten_nimi}`)
+      } */
     }
 
     if (muutettu.kysymykset.length > 0) {
@@ -227,15 +217,28 @@ const App = () => {
     }
   }
 
+  const getData = async (token, tentti_id) => {
+    try {                                                                                     //tallenna token localstorageen
+      const resTentti = await axios.get(`https://localhost:8080/tentti/id/${tentti_id}/token/${token}`);
+      const resTentit = await axios.get(`https://localhost:8080/tentit/token/${token}`);
+      console.log("Alustus result:", resTentti.data, resTentit.data)
+      dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data, tentit: resTentit.data } })
+      
+    } catch (error) {
+      console.log("Virhe alustaessa: ", error)
+    }
+  }
+
   const kirjauduSisään = async (käyttäjä) => {
     try {
       const result = await axios.get(`https://localhost:8080/kirjaudu/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}`);
       if (result) {
-        dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, token: result.data.data.token } })
+        dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, token: result.data.data.token } }) //TODO: tämä myös vaihtamaan id perusteella 
         console.log("kirjaudu result:", result.data)
+        getData(result.data.data.token, result.data.data.tentti_id)
       }
     } catch (err) {
-      console.log("Virhe kirjautuessa")
+      console.log("Virhe kirjautuessa", err)
     }
   }
 
@@ -245,7 +248,7 @@ const App = () => {
       const result = await axios.post(`https://localhost:8080/rekisteroi/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}/tentti_id/1/onko_admin/${käyttäjä.onko_admin}`);
       console.log("Rekisteröinti result:", result.data)
     } catch (err) {
-      console.log("Virhe rekisteröidessä")
+      console.log("Virhe rekisteröidessä", err)
     }
   }
 
@@ -256,13 +259,13 @@ const App = () => {
           {data.tentit.tenttiLista !== undefined && <div className="dropdown">
             <button className="dropbtn">Tentit</button>
             <div className="dropdown-content">
-              {data.tentit.tenttiLista.map((tent) => <a onClick={() => 
-                dispatch({ type: 'VAIHDA_TENTTI', payload: tent })} 
+              {data.tentit.tenttiLista.map((tent) => 
+                <a onClick={() => 
+                getData(data.token, tent.id)} //data.token täällä vielä!!!
                 key={tent.id}>{tent.ten_nimi}</a>)}
-              <img className="Image-nappi" src={plus} alt="Lisää vastausvaihtoehto" onClick={(event)=>
-                dispatch({type: 'LISÄÄ_TENTTI', payload:{} })}/>
             </div>
           </div>}
+          <button className="Nappi" onClick={(event)=> dispatch({type: 'LISÄÄ_TENTTI', payload:{} })}>Lisää tentti</button>
         </div>}
       {!data.tenttiNäkymä &&
         <div className='App-header'>

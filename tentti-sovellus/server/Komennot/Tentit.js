@@ -65,7 +65,7 @@ const lisääTentti = async (req, res) => {
 const muutaTentti = async (req, res) => {
   console.log("Muutetaan tentin tietoja")
   try{
-    let result = await pool.query(`UPDATE tentti SET ten_nimi = ${req.params.ten_nimi} WHERE tentti_id = ${req.params.tenttiId}`)
+    let result = await pool.query(`UPDATE tentti SET ten_nimi = ${req.params.ten_nimi} WHERE tentti_id = ${req.params.id}`)
     res.status(200).send(result)
   }catch(err){
     res.status(500).send(err)

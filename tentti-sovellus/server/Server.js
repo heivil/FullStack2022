@@ -55,7 +55,7 @@ app.post('/lisaaTentti/nimi/:nimi/min_pisteet/:min_pisteet', (req, res) => {
   tentit.lisääTentti(req, res)
 })
 
-app.put('/muutaTentti/id/:id', (req, res) =>{
+app.put('/muutaTentti/id/:id/nimi/:ten_nimi', (req, res) =>{
   tentit.muutaTentti(req, res)
 })
  
@@ -91,7 +91,10 @@ app.delete('/poistaVastaus/id/:id', (req, res) => {
   vastaukset.poistaVastaus(req, res)
 })
 
-
+app.get('/testi', (req, res) => {
+  res.send("testi")
+  console.log("testi")
+})
 /* app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 }) */
