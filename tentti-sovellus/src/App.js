@@ -83,6 +83,14 @@ const App = () => {
         dataKopio.poistettuData.vastaukset.push(action.payload.vastaus)
         return { ...state, tentti: dataKopio.tentti, poistettuData: dataKopio.poistettuData };
 
+      case 'POISTA_TENTTI':
+
+        const tentitKopio = dataKopio.tentit.tenttiLista.filter(tentti => tentti !== dataKopio.tentit[action.payload.tenttiIndex])
+        dataKopio.tentit.tenttiLista = tentitKopio
+        dataKopio.poistettuData.tentit.push(action.payload)
+        //vaihda staten tentti johonkin toiseen
+        return { ...state, tentti: dataKopio.tentti, poistettuData: dataKopio.poistettuData };
+
       case 'LISÄÄ_TENTTI':
         
         const uusiTentti = { ten_nimi: "Uusi tentti", kysymykset: [{ kys_nimi: "Kysymys", id: 0, vastaukset: [{ vas_nimi: "Vastaus 1", kysymys_id: 0 }] }]}
@@ -139,8 +147,10 @@ const App = () => {
   }
 
   useEffect(() => {
-    if (data.muutettuData.length > 0 || data.poistettuData.length > 0 || data.lisättyData.length > 0) {
-      console.log("tentti muuttui")
+    if (data.poistettuData.tentit.length > 0) {
+      getData(data.token, 1) //todo: token ei datasta ja tentti id joku muu kuin aina 1. 
+    }else{
+      console.log("tenteissä muutoksia")
       ajoitettuVaroitus()
     }
   }, [data.muutettuData, data.lisättyData, data.poistettuData]) 
@@ -183,9 +193,9 @@ const App = () => {
     }
 
     if (muutettu.tentit.length > 0) {
-      /* for (let i = 0; i < muutettu.tentit.length; i++) {
+      for (let i = 0; i < muutettu.tentit.length; i++) {
         await axios.put(`https://localhost:8080/muutaTentti/id/${muutettu.tentit[i].id}/nimi/${muutettu.tentit[i].ten_nimi}`)
-      } */
+      }
     }
 
     if (muutettu.kysymykset.length > 0) {
@@ -201,7 +211,9 @@ const App = () => {
     }
 
     if (poistettu.tentit.length > 0) {
-      await axios.delete(`https://localhost:8080/`)
+      for (let i = 0; i < poistettu.tentit.length; i++) {
+        await axios.delete(`https://localhost:8080/poistaTentti/id/${poistettu.tentit[i].id}`)
+      }
     }
 
     if (poistettu.kysymykset.length > 0) {
@@ -266,6 +278,7 @@ const App = () => {
             </div>
           </div>}
           <button className="Nappi" onClick={(event)=> dispatch({type: 'LISÄÄ_TENTTI', payload:{} })}>Lisää tentti</button>
+          <button className="Nappi" onClick={(event)=> dispatch({type: 'POISTA_TENTTI', payload:data.tentti })}>Poista tentti</button>
         </div>}
       {!data.tenttiNäkymä &&
         <div className='App-header'>
