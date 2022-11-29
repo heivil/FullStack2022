@@ -31,7 +31,7 @@ https.createServer(
   console.log(`Server is runing at port ${port}`);
 });
 
-app.post('/rekisteroi/tunnus/:tunnus/salasana/:salasana/tentti_id/:tentti_id/onko_admin/:onko_admin', login.tarkistaTunnus, (req, res, next) => {
+app.post('/rekisteroi/tunnus/:tunnus/salasana/:salasana/onko_admin/:onko_admin', login.tarkistaTunnus, (req, res, next) => {
   login.rekisteröi(req, res)
 })
 

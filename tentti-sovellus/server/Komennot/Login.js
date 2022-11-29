@@ -22,33 +22,34 @@ const kirjaudu = async (req, res, next) => {
 
 
   if (!existingUser || !passwordMatch) {
-    const error = Error("Väärä tunnus tai salasana");
-    res.status(500).send(error)
-  }
-  let token;
-  try {
-    //Creating jwt token
-    token = jwt.sign(
-      { id: existingUser.id, tunnus: existingUser.tunnus }, //<--onko_admin tänne tokeniin!!!
-      "secretkeyappearshere",    //dotenv! -> tätä hyvä käyttää!! 
-      { expiresIn: "1h" }
-    );
-  } catch (err) {
-    console.log(err);
-    const error = new Error("Error! Something went wrong.");
-    res.status(500).send(err)
-  }
- 
-  res.status(200).json({
-      success: true,
-      data: {
-        id: existingUser.id,
-        tunnus: existingUser.tunnus,
-        tentti_id: existingUser.tentti_id,
-        token: token
-      },
+    console.log("väärä tunnuus tai salasana")
+    res.status(500).send("väärä tunnuus tai salasana")
+  }else
+  {
+    let token;
+    try {
+      //Creating jwt token
+      token = jwt.sign(
+        { id: existingUser.id, tunnus: existingUser.tunnus }, //<--onko_admin tänne tokeniin!!!
+        "secretkeyappearshere",    //dotenv! -> tätä hyvä käyttää!! 
+        { expiresIn: "1h" }
+      );
+    } catch (err) {
+      console.log(err);
+      const error = new Error("Error! Something went wrong.");
+      res.status(500).send(err)
+    }
+  
+    res.status(200).json({
+        success: true,
+        data: {
+          id: existingUser.id,
+          tunnus: existingUser.tunnus,
+          tentti_id: existingUser.tentti_id,
+          token: token
+        },
     });
-
+  }
 }
 
 const verifoiToken = (req, res, next) =>{
@@ -94,17 +95,23 @@ const tarkistaTunnus= async(req, res, next) => {
 }
 
 const rekisteröi = async (req, res, next) =>{
-  const { tunnus, salasana, tentti_id, onko_admin } = req.params;
+  const { tunnus, salasana, onko_admin } = req.params;
   let result; 
+  const client = await pool.connect()
   try {
-
     let hashed = await bcrypt.hash(salasana, saltRounds)
+    await client.query('BEGIN')
+    const tentti_id = await client.query(`SELECT id FROM tentti`)
     result = await pool.query("INSERT INTO kayttaja (tunnus, salasana, tentti_id, onko_admin) VALUES ($1,$2,$3,$4) RETURNING id",
-    [tunnus, hashed, tentti_id, onko_admin])
+    [tunnus, hashed, tentti_id.rows[0].id, onko_admin])
     res.status(200).send(result.rows)
+    await client.query('COMMIT')
   } catch (err){
     //const error = new Error("Error! Something went wrong.");
     res.status(500).send(err)
+    await client.query('ROLLBACK')
+  }finally{
+    client.release()
   }
   /* let token;
   try {

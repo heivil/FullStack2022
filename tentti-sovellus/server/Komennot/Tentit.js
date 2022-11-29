@@ -77,6 +77,8 @@ const poistaTentti = async (req, res) => {
   const client = await pool.connect()
   try{
     await client.query('BEGIN')
+    uusiId = await client.query(`SELECT id FROM tentti`)
+    await client.query(`UPDATE kayttaja SET tentti_id = ${uusiId.rows[0].id} WHERE tentti_id = ${req.params.id}`)
     await client.query(`DELETE FROM vastaus USING kysymys WHERE vastaus.kysymys_id = kysymys.id AND kysymys.tentti_id = ${req.params.id}`)
     await client.query(`DELETE FROM kysymys WHERE tentti_id = ${req.params.id}`)
     await client.query(`DELETE FROM tentti WHERE id = ${req.params.id}`)

@@ -12,7 +12,7 @@ const App = () => {
     const defaultKäyttäjä = { käyttäjätunnus: "", salasana: "", tentti_id: 0, onko_admin: false } */
 
   const [data, dispatch] = useReducer(reducer, {
-    tentit: {}, tentti: {}, /* tenttiNumero: 1, */ tallennetaanko: false, opettajaMoodi: true, tenttiNäkymä: false,
+    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: true, tenttiNäkymä: false,
     kirjauduRuutu: true, käyttäjä: {}, muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] }, poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }, token: ''
   });
@@ -210,7 +210,7 @@ const App = () => {
       }
     }
 
-    if (poistettu.tentit.length > 0) {
+    if (poistettu.tentit.length > 0) { 
       for (let i = 0; i < poistettu.tentit.length; i++) {
         await axios.delete(`https://localhost:8080/poistaTentti/id/${poistettu.tentit[i].id}`)
       }
@@ -245,7 +245,7 @@ const App = () => {
     try {
       const result = await axios.get(`https://localhost:8080/kirjaudu/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}`);
       if (result) {
-        dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, token: result.data.data.token } }) //TODO: tämä myös vaihtamaan id perusteella 
+        dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, token: result.data.data.token } })
         console.log("kirjaudu result:", result.data)
         getData(result.data.data.token, result.data.data.tentti_id)
       }
@@ -256,8 +256,8 @@ const App = () => {
 
   const rekisteröiUusi = async (käyttäjä) => {
     console.log(käyttäjä)
-    try {                                                                    //tentti_id on aina tässä 1 tällä hetkellä
-      const result = await axios.post(`https://localhost:8080/rekisteroi/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}/tentti_id/1/onko_admin/${käyttäjä.onko_admin}`);
+    try {
+      const result = await axios.post(`https://localhost:8080/rekisteroi/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}/onko_admin/${käyttäjä.onko_admin}`);
       console.log("Rekisteröinti result:", result.data)
     } catch (err) {
       console.log("Virhe rekisteröidessä", err)
