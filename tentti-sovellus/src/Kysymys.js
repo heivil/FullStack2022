@@ -9,7 +9,7 @@ const Kysymys = (props) => {
         <input type="text" onChange={(event)=>{props.dispatch({type: 'KYSYMYS_MUUTTUI', 
       payload:
       {
-        kysymys: props.kysymys,
+        id: props.kysymys.id,
         kys_nimi: event.target.value, 
         kysymysIndex: props.kysymysIndex,
         tentti: props.tentti

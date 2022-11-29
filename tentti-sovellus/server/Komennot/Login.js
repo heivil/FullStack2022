@@ -24,8 +24,7 @@ const kirjaudu = async (req, res, next) => {
   if (!existingUser || !passwordMatch) {
     console.log("väärä tunnuus tai salasana")
     res.status(500).send("väärä tunnuus tai salasana")
-  }else
-  {
+  } else {
     let token;
     try {
       //Creating jwt token

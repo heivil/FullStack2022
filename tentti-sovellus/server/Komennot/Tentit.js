@@ -53,7 +53,7 @@ const lataaTentit = async (req, res) => {
 }
 
 const lisääTentti = async (req, res) => {
-  console.log("Tenttiä lisäämässä", req.params)
+  console.log("Tenttiä lisäämässä")
   try{
     let result = await pool.query("INSERT INTO tentti (ten_nimi, min_pisteet) VALUES ($1, $2)", [req.params.nimi, req.params.min_pisteet])
     res.status(200).send(result)
@@ -65,7 +65,7 @@ const lisääTentti = async (req, res) => {
 const muutaTentti = async (req, res) => {
   console.log("Muutetaan tentin tietoja")
   try{
-    let result = await pool.query(`UPDATE tentti SET ten_nimi = ${req.params.ten_nimi} WHERE tentti_id = ${req.params.id}`)
+    let result = await pool.query(`UPDATE tentti SET ten_nimi = '${req.params.ten_nimi}' WHERE id = ${req.params.id}`)
     res.status(200).send(result)
   }catch(err){
     res.status(500).send(err)

@@ -12,9 +12,10 @@ const App = () => {
     const defaultKäyttäjä = { käyttäjätunnus: "", salasana: "", tentti_id: 0, onko_admin: false } */
 
   const [data, dispatch] = useReducer(reducer, {
-    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: true, tenttiNäkymä: false,
-    kirjauduRuutu: true, käyttäjä: {}, muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
-    lisättyData: { tentit: [], kysymykset: [], vastaukset: [] }, poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }, token: ''
+    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: true, tenttiNäkymä: false,kirjauduRuutu: true, 
+    muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
+    lisättyData: { tentit: [], kysymykset: [], vastaukset: [] }, 
+    poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }, token: ''
   });
 
   const [ajastin, setAjastin] = useState()
@@ -35,35 +36,31 @@ const App = () => {
     switch (action.type) {
       case 'VASTAUS_MUUTTUI':
 
-        let muutettuVastaus = action.payload.vastaus
-        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].vas_nimi = action.payload.vas_nimi //nimi tulee vähän oudosti erillään koko objektista event.target.valuen takia  
+        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].vas_nimi = action.payload.vas_nimi
         //tarkistetaan onko muutettujen vastausten listalla jo sama vastaus, jos ei pushataan listaan, jos on niin muutetaan vain vas_nimi
-        if (!dataKopio.muutettuData.vastaukset.some(vas => vas.id === muutettuVastaus.id)) {
-          dataKopio.muutettuData.vastaukset.push(muutettuVastaus)
+        if (!dataKopio.muutettuData.vastaukset.some(vas => vas.id === action.payload.id)) {
+          dataKopio.muutettuData.vastaukset.push(dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
         } else {
-          dataKopio.muutettuData.vastaukset.some(vas => vas.id === muutettuVastaus.id && (vas.vas_nimi = muutettuVastaus.vas_nimi))
+          dataKopio.muutettuData.vastaukset.some(vas => vas.id === action.payload.id && (vas.vas_nimi = action.payload.vas_nimi))
         }
         return { ...state, tentti: dataKopio.tentti, muutettuData: dataKopio.muutettuData };
 
       case 'KYSYMYS_MUUTTUI':
 
-        let muutettuKysymys = action.payload.kysymys
         dataKopio.tentti.kysymykset[action.payload.kysymysIndex].kys_nimi = action.payload.kys_nimi
-        if (!dataKopio.muutettuData.kysymykset.some(kys => kys.id === muutettuKysymys.id)) {
-          dataKopio.muutettuData.kysymykset.push(muutettuKysymys)
+        if (!dataKopio.muutettuData.kysymykset.some(kys => kys.id === action.payload.id)) {
+          dataKopio.muutettuData.kysymykset.push(dataKopio.tentti.kysymykset[action.payload.kysymysIndex])
         } else {
-          dataKopio.muutettuData.kysymykset.some(kys => kys.id === muutettuKysymys.id && (kys.kys_nimi = muutettuKysymys.kys_nimi))
+          dataKopio.muutettuData.kysymykset.some(kys => kys.id === action.payload.id && (kys.kys_nimi = action.payload.kys_nimi))
         }
         return { ...state, tentti: dataKopio.tentti, muutettuData: dataKopio.muutettuData };
 
       case 'TENTTI_MUUTTUI':
-
-        const muutettuTentti = action.payload.tentti
         dataKopio.tentti.ten_nimi = action.payload.ten_nimi
-        if (!dataKopio.muutettuData.tentit.some(ten => ten.id === muutettuTentti.id)) {
-          dataKopio.muutettuData.tentit.push(muutettuTentti)
+        if (!dataKopio.muutettuData.tentit.some(ten => ten.id === action.payload.id)) {
+          dataKopio.muutettuData.tentit.push(dataKopio.tentti)
         } else {
-          dataKopio.muutettuData.tentit.some(ten => ten.id === muutettuTentti.id && (ten.ten_nimi = muutettuTentti.ten_nimi))
+          dataKopio.muutettuData.tentit.some(ten => ten.id === action.payload.id && (ten.ten_nimi = action.payload.ten_nimi))
         }
         return { ...state, tentti: dataKopio.tentti, muutettuData: dataKopio.muutettuData };
 
@@ -255,7 +252,6 @@ const App = () => {
   }
 
   const rekisteröiUusi = async (käyttäjä) => {
-    console.log(käyttäjä)
     try {
       const result = await axios.post(`https://localhost:8080/rekisteroi/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}/onko_admin/${käyttäjä.onko_admin}`);
       console.log("Rekisteröinti result:", result.data)

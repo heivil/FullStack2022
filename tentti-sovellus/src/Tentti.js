@@ -7,7 +7,7 @@ const Tentti = (props) => {
       <div>Tentti: <input type="text" onChange={(event)=>{props.dispatch({type: 'TENTTI_MUUTTUI', 
       payload:
       {
-        tentti: props.tentti,
+        id: props.tentti.id,
         ten_nimi: event.target.value
       }})}} value = {props.tentti.ten_nimi}/> </div><br/>
       <div>Kysymykset: </div>
