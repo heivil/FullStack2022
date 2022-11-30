@@ -3,6 +3,8 @@ import Tentti from './Tentti';
 import React, { useState, useReducer, useEffect } from 'react';
 import axios from 'axios'
 import KirjauduRuutu from './Kirjaudu';
+import DBG from './DBG.png';
+import BG from './BG.png';
 
 //useref --> siirtää fokuksen tiettyyn komponenttiin esim tekstikenttä yms
 
@@ -12,10 +14,10 @@ const App = () => {
     const defaultKäyttäjä = { käyttäjätunnus: "", salasana: "", tentti_id: 0, onko_admin: false } */
 
   const [data, dispatch] = useReducer(reducer, {
-    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: true, tenttiNäkymä: false,kirjauduRuutu: true, 
+    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: true, tenttiNäkymä: false, kirjauduRuutu: true, 
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] }, 
-    poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }, token: ''
+    poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }, token: '', darkMode: false
   });
 
   const [ajastin, setAjastin] = useState()
@@ -36,13 +38,13 @@ const App = () => {
     switch (action.type) {
       case 'VASTAUS_MUUTTUI':
 
-        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].vas_nimi = action.payload.vas_nimi
-        //tarkistetaan onko muutettujen vastausten listalla jo sama vastaus, jos ei pushataan listaan, jos on niin muutetaan vain vas_nimi
-        if (!dataKopio.muutettuData.vastaukset.some(vas => vas.id === action.payload.id)) {
-          dataKopio.muutettuData.vastaukset.push(dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
-        } else {
-          dataKopio.muutettuData.vastaukset.some(vas => vas.id === action.payload.id && (vas.vas_nimi = action.payload.vas_nimi))
-        }
+          dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].vas_nimi = action.payload.vas_nimi
+          //tarkistetaan onko muutettujen vastausten listalla jo sama vastaus, jos ei pushataan listaan, jos on niin muutetaan vain vas_nimi
+          if (!dataKopio.muutettuData.vastaukset.some(vas => vas.id === action.payload.id)) {
+            dataKopio.muutettuData.vastaukset.push(dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
+          } else {
+            dataKopio.muutettuData.vastaukset.some(vas => vas.id === action.payload.id && (vas.vas_nimi = action.payload.vas_nimi))
+          }
         return { ...state, tentti: dataKopio.tentti, muutettuData: dataKopio.muutettuData };
 
       case 'KYSYMYS_MUUTTUI':
@@ -77,8 +79,13 @@ const App = () => {
         const vastauksetKopio = dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.filter(vastaus =>
           vastaus !== dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
         dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset = vastauksetKopio
-        dataKopio.poistettuData.vastaukset.push(action.payload.vastaus)
-        return { ...state, tentti: dataKopio.tentti, poistettuData: dataKopio.poistettuData };
+        if(action.payload.vastaus.id !== undefined){
+          dataKopio.poistettuData.vastaukset.push(action.payload.vastaus)
+        }else{
+          dataKopio.lisättyData.vastaukset = dataKopio.lisättyData.vastaukset.filter(vas => vas.vas_nimi !== action.payload.vastaus.vas_nimi)
+        }
+        
+        return { ...state, tentti: dataKopio.tentti, poistettuData: dataKopio.poistettuData, lisättyData: dataKopio.lisättyData };
 
       case 'POISTA_TENTTI':
 
@@ -105,11 +112,19 @@ const App = () => {
         return { ...state, tentti: dataKopio.tentti, lisättyData: dataKopio.lisättyData };
 
       case 'LISÄÄ_VASTAUS':
-
-        //korjaa pisteet ja onko oikein uusiVastauksessa !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        const uusiVastaus = { vas_nimi: "Uusi vastaus", kysymys_id: action.payload.kysymys_id, pisteet: 0, onko_oikein: false };
-        dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)
-        dataKopio.lisättyData.vastaukset.push(uusiVastaus)
+        
+        //jos vastausta ei löydy tentistä lisätään uusi vastaus listaan, muuten muutetaan jo lisätyn vastauksen arvoa 
+        if(!dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.some(vas => vas.vas_nimi === action.payload.vanhaVastaus)){
+          console.log("lisätään vastausta", action.payload)
+          //korjaa pisteet ja onko oikein uusiVastauksessa !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          const uusiVastaus = { vas_nimi: "Uusi vastaus", kysymys_id: action.payload.kysymys_id, pisteet: 0, onko_oikein: false };
+          dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)
+          dataKopio.lisättyData.vastaukset.push(uusiVastaus)
+        } else {
+          console.log("muutetaan lisättyä vastausta")
+          dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.some(vas => vas.vas_nimi === action.payload.vanhaVastaus && (vas.vas_nimi = action.payload.vas_nimi))
+          dataKopio.lisättyData.vastaukset.some(vas => vas.vas_nimi === action.payload.vanhaVastaus && (vas.vas_nimi = action.payload.vas_nimi))
+        }
         return { ...state, lisättyData: dataKopio.lisättyData, tentti: dataKopio.tentti };
 
       case 'VAIHDA_TENTTI':
@@ -137,6 +152,10 @@ const App = () => {
       case 'VAIHDA_TENTTINÄKYMÄ':
 
         return { ...state, tenttiNäkymä: action.payload.tenttiNäkymä, token: action.payload.token }
+
+      case 'DARK_MODE':
+
+          return{...state, darkMode: action.payload}
 
       default:
         throw new Error("Reduceriin tultiin oudosti.");
@@ -260,8 +279,21 @@ const App = () => {
     }
   }
 
+  const vaihdaTeema = () => {
+    
+    if(!data.darkMode){
+      document.querySelector(':root').style.setProperty('--bg', `url(${DBG})`)
+      document.querySelector(':root').style.setProperty('--fontColor', 'white')
+      dispatch({type: 'DARK_MODE', payload:true})
+    } else {
+      document.querySelector(':root').style.setProperty('--bg', `url(${BG})`)
+      document.querySelector(':root').style.setProperty('--fontColor', `black`)
+      dispatch({type: 'DARK_MODE', payload:false})
+    }
+  }
+
   return (
-    <div className='Screen'>
+    <div>
       {data.tenttiNäkymä &&
         <div className='App-header'>
           {data.tentit.tenttiLista !== undefined && <div className="dropdown">
@@ -275,12 +307,14 @@ const App = () => {
           </div>}
           <button className="Nappi" onClick={(event)=> dispatch({type: 'LISÄÄ_TENTTI', payload:{} })}>Lisää tentti</button>
           <button className="Nappi" onClick={(event)=> dispatch({type: 'POISTA_TENTTI', payload:data.tentti })}>Poista tentti</button>
+          <button className="Nappi" onClick={(event)=> vaihdaTeema()}>{data.darkMode ? 'Light Mode' : 'Dark Mode' }</button>
         </div>}
       {!data.tenttiNäkymä &&
         <div className='App-header'>
           <button className='Nappi' onClick={() => dispatch({ type: 'KIRJAUDU_RUUTU', payload: true })}>Kirjaudu</button>
           <button className='Nappi' onClick={() => dispatch({ type: 'KIRJAUDU_RUUTU', payload: false })}>Rekisteröidy</button>
           <button className='Nappi' onClick={() => { }}>Tietoa sovelluksesta</button>
+          <button className="Nappi" onClick={(event)=> vaihdaTeema()}>{data.darkMode ? 'Light Mode' : 'Dark Mode' }</button>
         </div>}
 
       {data.tenttiNäkymä &&
