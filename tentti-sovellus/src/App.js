@@ -71,14 +71,20 @@ const App = () => {
         const kysymyksetKopio = dataKopio.tentti.kysymykset.filter(kysymys =>
           kysymys !== dataKopio.tentti.kysymykset[action.payload.kysymysIndex])
         dataKopio.tentti.kysymykset = kysymyksetKopio
-        dataKopio.poistettuData.kysymykset.push(action.payload.kysymys)
-        return { ...state, tentti: dataKopio.tentti, poistettuData: dataKopio.poistettuData };
+        //jos ei idtä niin ei ole myöskään tietokannassa, jolloin kysymys poistetaan pelkästään lisättydata listasta
+        if(action.payload.kysymys.id !== undefined){
+          dataKopio.poistettuData.kysymykset.push(action.payload.kysymys)
+        } else {
+          dataKopio.lisättyData.kysymykset = dataKopio.lisättyData.kysymykset.filter(kys => kys.kys_nimi !== action.payload.kysymys.kys_nimi)
+        }
+        return { ...state, tentti: dataKopio.tentti, poistettuData: dataKopio.poistettuData, lisättyData: dataKopio.lisättyData };
 
       case 'POISTA_VASTAUS':
 
         const vastauksetKopio = dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.filter(vastaus =>
           vastaus !== dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])
         dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset = vastauksetKopio
+        //jos ei idtä niin ei ole myöskään tietokannassa, jolloin vastaus poistetaan pelkästään lisättydata listasta
         if(action.payload.vastaus.id !== undefined){
           dataKopio.poistettuData.vastaukset.push(action.payload.vastaus)
         }else{
@@ -105,10 +111,18 @@ const App = () => {
 
       case 'LISÄÄ_KYSYMYS':
 
-        const uusiKysymys = { kys_nimi: "Uusi kysymys", tentti_id: action.payload.tentti_id, vastaukset:[] }
-        dataKopio.lisättyData.kysymykset.push(uusiKysymys)
-        dataKopio.tentti.kysymykset.push(uusiKysymys)
-        console.log("kysymys lisätty", dataKopio.tentti)
+      //jos kysymystä ei löydy tentistä lisätään uusi kysymys listaan, muuten muutetaan jo lisätyn kysymyksen arvoa 
+        if(!dataKopio.tentti.kysymykset.some(kys => kys.kys_nimi === action.payload.vanhaKysymys)){
+          const uusiKysymys = { kys_nimi: "Uusi kysymys", tentti_id: action.payload.tentti_id, vastaukset:[] }
+          dataKopio.lisättyData.kysymykset.push(uusiKysymys)
+          dataKopio.tentti.kysymykset.push(uusiKysymys)
+          console.log("kysymys lisätty", dataKopio.tentti)
+        } else {
+          //muutetaan täällä lisättyjä vastauksia koska ne ei ole vielä teitokannassa ja id:tä ei ole 
+          console.log("muutetaan lisättyä kysymystä")
+          dataKopio.tentti.kysymykset.some(kys => kys.kys_nimi === action.payload.vanhaKysymys && (kys.kys_nimi = action.payload.kys_nimi))
+          dataKopio.lisättyData.vastaukset.some(kys => kys.kys_nimi === action.payload.vanhaKysymys && (kys.kys_nimi = action.payload.kys_nimi))
+        }
         return { ...state, tentti: dataKopio.tentti, lisättyData: dataKopio.lisättyData };
 
       case 'LISÄÄ_VASTAUS':
@@ -121,6 +135,7 @@ const App = () => {
           dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.push(uusiVastaus)
           dataKopio.lisättyData.vastaukset.push(uusiVastaus)
         } else {
+          //muutetaan täällä lisättyjä vastauksia koska ne ei ole vielä teitokannassa ja id:tä ei ole 
           console.log("muutetaan lisättyä vastausta")
           dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset.some(vas => vas.vas_nimi === action.payload.vanhaVastaus && (vas.vas_nimi = action.payload.vas_nimi))
           dataKopio.lisättyData.vastaukset.some(vas => vas.vas_nimi === action.payload.vanhaVastaus && (vas.vas_nimi = action.payload.vas_nimi))
