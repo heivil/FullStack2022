@@ -7,7 +7,6 @@ const Vastaus = (props) => {
       {props.moodi ?
         <>
           <div> {props.vastaus.vas_nimi} <input type="text" onChange={(event) => {
-            props.vastaus.id !== undefined ?
             props.dispatch({
               type: 'VASTAUS_MUUTTUI',
               payload: {
@@ -15,15 +14,6 @@ const Vastaus = (props) => {
                 vas_nimi: event.target.value,
                 vastausIndex: props.vastausIndex,
                 kysymysIndex: props.kysymysIndex,
-              }
-            }) :
-            props.dispatch({
-              type: 'LISÄÄ_VASTAUS',
-              payload: {
-                vas_nimi: event.target.value,
-                vastausIndex: props.vastausIndex,
-                kysymysIndex: props.kysymysIndex,
-                vanhaVastaus: props.vastaus.vas_nimi
               }
             })
           }} value={props.vastaus.vas_nimi} />

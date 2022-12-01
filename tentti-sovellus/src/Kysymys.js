@@ -7,7 +7,6 @@ const Kysymys = (props) => {
     <div className="Kysymys">
       {props.moodi ? <>
         <input type="text" onChange={(event) => {
-          props.kysymys.id !== undefined ?
           props.dispatch({
             type: 'KYSYMYS_MUUTTUI',
             payload: {
@@ -15,15 +14,6 @@ const Kysymys = (props) => {
               kys_nimi: event.target.value,
               kysymysIndex: props.kysymysIndex,
               tentti: props.tentti
-            }
-          }) :
-          props.dispatch({
-            type: 'LISÄÄ_KYSYMYS',
-            payload: {
-              kys_nimi: event.target.value,
-              kysymysIndex: props.kysymysIndex,
-              tentti: props.tentti,
-              vanhaKysymys: props.kysymys.kys_nimi
             }
           })
         }
