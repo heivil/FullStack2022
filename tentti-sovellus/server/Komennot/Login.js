@@ -52,8 +52,8 @@ const kirjaudu = async (req, res, next) => {
 }
 
 const verifoiToken = (req, res, next) =>{
-  const token = req.params.token
-  //const token = req.headers.authorization?.split(' ')[1]; 
+  //const token = req.params.token
+  const token = req.headers.authorization; 
   //Authorization: 'Bearer TOKEN'
   if(!token)
   {
@@ -100,7 +100,7 @@ const rekisteröi = async (req, res, next) =>{
   try {
     let hashed = await bcrypt.hash(salasana, saltRounds)
     await client.query('BEGIN')
-    const tentti_id = await client.query(`SELECT id FROM tentti`)
+    const tentti_id = await client.query(`SELECT id FROM tentti ORDER BY id ASC`)
     result = await pool.query("INSERT INTO kayttaja (tunnus, salasana, tentti_id, onko_admin) VALUES ($1,$2,$3,$4) RETURNING id",
     [tunnus, hashed, tentti_id.rows[0].id, onko_admin])
     res.status(200).send(result.rows)

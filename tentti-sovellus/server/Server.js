@@ -41,13 +41,13 @@ app.get('/kirjaudu/tunnus/:tunnus/salasana/:salasana', (req, res) => {
 
 //app.use(login.verifoiToken)
 
-app.get('/tentti/id/:tentti_id/token/:token', login.verifoiToken, (req, res) => { 
+app.get('/tentti/id/:tentti_id', login.verifoiToken, (req, res) => { 
   tentit.lataaTenttiIdllä(req, res)
 })
 
 //app.use(login.onkoAdmin)
 
-app.get('/tentit/token/:token', login.verifoiToken, (req, res) => { 
+app.get('/tentit', login.verifoiToken, (req, res) => { 
   tentit.lataaTentit(req, res)
 })
 
@@ -95,6 +95,14 @@ app.get('/testi', (req, res) => {
   res.send("testi")
   console.log("testi")
 })
+
+/* app.post('/localStorage/token/:token/', (req, res) => {
+  console.log("Local storageen tallennetaan dataa", req)
+  fs.writeFileSync("./SaveData.json", JSON.stringify(*PARAMS*));
+  res.send("Tallennetaan")
+}) */
+
+
 /* app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 }) */
