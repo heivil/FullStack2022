@@ -54,7 +54,7 @@ const kirjaudu = async (req, res, next) => {
 
 const verifoiToken = (req, res, next) =>{
   //const token = req.params.token
-  const token = req.headers.authorization; 
+  const token = req.headers.authorization?.split(' ')[1];
   //Authorization: 'Bearer TOKEN'
   if(!token)
   {

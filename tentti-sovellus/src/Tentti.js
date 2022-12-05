@@ -5,16 +5,16 @@ const Tentti = (props) => {
 
   return (
     <div>
-      <div>Tentti: 
-        <input type="text" onChange={(event)=>{props.dispatch({type: 'TENTTI_MUUTTUI', 
+      <div>Tentti:  
+        {props.moodi ? <input type="text" onChange={(event)=>{props.dispatch({type: 'TENTTI_MUUTTUI', 
           payload:
           {
             id: props.tentti.id,
             ten_nimi: event.target.value
-          }})}} value = {props.tentti.ten_nimi}/>
+          }})}} value = {props.tentti.ten_nimi}/> : <> {props.tentti.ten_nimi}</>}
         <p>Läpäisyyn vaadittavat pisteet: {props.tentti.minPisteet}</p>
         <p>Maksimipisteet: {props.tentti.maxPisteet}</p>
-      </div><br/>
+      </div>
       <div>Kysymykset: </div>
       <div>{props.tentti.kysymykset !== undefined && props.tentti.kysymykset.length > 0 && props.tentti.kysymykset.map((kysymys, index) =>
         <Kysymys key = {index} kysymys={kysymys} dispatch = {props.dispatch} kysymysIndex = {index} tentti = {props.tentti} moodi={props.moodi}/>)} 

@@ -7,9 +7,10 @@ const cors = require('cors');
 const app = express();
 const port = 8080;
 const login = require("./Komennot/Login");
-const tentit = require("./Komennot/Tentit")
-const kysymykset = require("./Komennot/Kysymykset")
-const vastaukset = require("./Komennot/Vastaukset")
+const tentit = require("./Komennot/Tentit");
+const kysymykset = require("./Komennot/Kysymykset");
+const vastaukset = require("./Komennot/Vastaukset");
+const käyttäjät = require("./Komennot/Käyttäjät");
 const https = require("https");
 //const nodemailer = require('nodemailer');
 
@@ -44,7 +45,7 @@ app.get('/kirjaudu/tunnus/:tunnus/salasana/:salasana', (req, res) => {
   login.kirjaudu(req, res)
 })
 
-app.use(login.verifoiToken)
+app.use(login.verifoiToken) //jos token vanhenee, serveri kaatuu:D
 
 app.get('/tentti/id/:tentti_id', (req, res) => { 
   tentit.lataaTenttiIdllä(req, res)
@@ -52,6 +53,10 @@ app.get('/tentti/id/:tentti_id', (req, res) => {
 
 app.get('/tentit', (req, res) => { 
   tentit.lataaTentit(req, res)
+})
+
+app.post('/tallennaSuoritus/', käyttäjät.tallennaVastaukset, (req, res) => {
+  käyttäjät.tallennaSuoritus(req, res)
 })
 
 app.use(login.onkoAdmin)

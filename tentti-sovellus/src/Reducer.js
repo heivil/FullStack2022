@@ -5,6 +5,11 @@ function reducer(state, action) {
       
         dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].vas_nimi = action.payload.vas_nimi
         dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].onko_oikein = action.payload.onko_oikein
+        if(action.payload.onko_oikein){
+          dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].pisteet = 1
+        }else{
+          dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].pisteet = -0.5
+        }
         //tarkistetaan onko muutettujen vastausten listalla jo sama vastaus, jos ei pushataan listaan, jos on niin muutetaan vain vas_nimi
         if (!dataKopio.muutettuData.vastaukset.some(vas => vas.id === action.payload.id)) {
           dataKopio.muutettuData.vastaukset.push(dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex])

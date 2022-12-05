@@ -32,7 +32,7 @@ const lataaTenttiIdllä = async (req, res) => {
           kysymykset[j].vastaukset === undefined && (kysymykset[j].vastaukset = [])
           if(kysymykset[j].id === vas.rows[i].kysymys_id){
             kysymykset[j].vastaukset.push(vas.rows[i])
-            maxPisteet += vas.rows[i].pisteet
+            if(vas.rows[i].pisteet > 0) maxPisteet += vas.rows[i].pisteet
           }
         }
       } 
