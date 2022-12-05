@@ -114,7 +114,7 @@ function reducer(state, action) {
 
     case 'VAIHDA_TENTTINÄKYMÄ':
 
-      return { ...state, tenttiNäkymä: action.payload.tenttiNäkymä, token: action.payload.token }
+      return { ...state, tenttiNäkymä: action.payload.tenttiNäkymä, opettajaMoodi: action.payload.onko_admin }
 
     case 'DARK_MODE':
 

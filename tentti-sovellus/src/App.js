@@ -15,7 +15,7 @@ const App = () => {
     const defaultKäyttäjä = { käyttäjätunnus: "", salasana: "", tentti_id: 0, onko_admin: false } */
 
   const [data, dispatch] = useReducer(reducer.reducer, {
-    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: true, tenttiNäkymä: false, kirjauduRuutu: true, darkMode: false,
+    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: false, tenttiNäkymä: false, kirjauduRuutu: true, darkMode: false,
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] }, 
     poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }
@@ -119,7 +119,6 @@ const App = () => {
         await getData(0) //koska tentti poistettiin, heataan uusin tentti argumentilla 0
       }
     }
-    
   }
 
   const getData = async (tentti_id) => {
@@ -137,8 +136,8 @@ const App = () => {
     try {
       const result = await axios.get(`https://localhost:8080/kirjaudu/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}`);
       if (result) {
-        dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true} })
         axios.defaults.headers.common['Authorization'] = result.data.data.token;
+        dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: result.data.data.onko_admin} })
         console.log("kirjaudu result:", result.data)
         getData(result.data.data.tentti_id) 
       }

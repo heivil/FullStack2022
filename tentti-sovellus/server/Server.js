@@ -31,7 +31,12 @@ https.createServer(
   console.log(`Server is runing at port ${port}`);
 });
 
-app.post('/rekisteroi/tunnus/:tunnus/salasana/:salasana/onko_admin/:onko_admin', login.tarkistaTunnus, (req, res, next) => {
+app.get('/testi', (req, res) => {
+  res.send("testi")
+  console.log("testi")
+})
+
+app.post('/rekisteroi/tunnus/:tunnus/salasana/:salasana/onko_admin/:onko_admin', login.tarkistaTunnus, (req, res) => {
   login.rekisteröi(req, res)
 })
 
@@ -39,17 +44,17 @@ app.get('/kirjaudu/tunnus/:tunnus/salasana/:salasana', (req, res) => {
   login.kirjaudu(req, res)
 })
 
-//app.use(login.verifoiToken)
+app.use(login.verifoiToken)
 
-app.get('/tentti/id/:tentti_id', login.verifoiToken, (req, res) => { 
+app.get('/tentti/id/:tentti_id', (req, res) => { 
   tentit.lataaTenttiIdllä(req, res)
 })
 
-//app.use(login.onkoAdmin)
-
-app.get('/tentit', login.verifoiToken, (req, res) => { 
+app.get('/tentit', (req, res) => { 
   tentit.lataaTentit(req, res)
 })
+
+app.use(login.onkoAdmin)
 
 app.post('/lisaaTentti/nimi/:nimi/min_pisteet/:min_pisteet', (req, res) => {
   tentit.lisääTentti(req, res)
@@ -89,11 +94,6 @@ app.put('/muutaVastaus/id/:id/vas_nimi/:vas_nimi/kysymys_id/:kysymys_id/pisteet/
 
 app.delete('/poistaVastaus/id/:id', (req, res) => {
   vastaukset.poistaVastaus(req, res)
-})
-
-app.get('/testi', (req, res) => {
-  res.send("testi")
-  console.log("testi")
 })
 
 /* app.post('/localStorage/token/:token/', (req, res) => {

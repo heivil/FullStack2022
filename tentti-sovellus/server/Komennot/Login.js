@@ -12,7 +12,7 @@ const kirjaudu = async (req, res, next) => {
   let passwordMatch=false;
   try {
     let result = await pool.query(`SELECT * FROM kayttaja WHERE tunnus = '${tunnus}'`)
-    existingUser = {salasana:result.rows[0].salasana, tunnus:result.rows[0].tunnus, tentti_id:result.rows[0].tentti_id, id:result.rows[0].id};
+    existingUser = {salasana:result.rows[0].salasana, tunnus:result.rows[0].tunnus, tentti_id:result.rows[0].tentti_id, id:result.rows[0].id, onko_admin:result.rows[0].onko_admin};
     passwordMatch = await bcrypt.compare(salasana, existingUser.salasana)
 
   } catch(err) {
@@ -29,7 +29,7 @@ const kirjaudu = async (req, res, next) => {
     try {
       //Creating jwt token
       token = jwt.sign(
-        { id: existingUser.id, tunnus: existingUser.tunnus }, //<--onko_admin tänne tokeniin!!!
+        { id: existingUser.id, tunnus: existingUser.tunnus, onko_admin: existingUser.onko_admin },
         "secretkeyappearshere",    //dotenv! -> tätä hyvä käyttää!! 
         { expiresIn: "1h" }
       );
@@ -45,6 +45,7 @@ const kirjaudu = async (req, res, next) => {
           id: existingUser.id,
           tunnus: existingUser.tunnus,
           tentti_id: existingUser.tentti_id,
+          onko_admin: existingUser.onko_admin,
           token: token
         },
     });
@@ -61,7 +62,6 @@ const verifoiToken = (req, res, next) =>{
   }
   //Decoding the token
   const decodedToken = jwt.verify(token,"secretkeyappearshere" );
-  //console.log(decodedToken)
   req.decoded = decodedToken
   console.log("token: ", req.decoded)
   next() 

@@ -1,7 +1,6 @@
 import trash from './trash.png';
 
 const Vastaus = (props) => {
-  props.pisteLaskuri(props.vastaus.pisteet)
   return (
     <div className="Vastaus">
       {props.moodi && 

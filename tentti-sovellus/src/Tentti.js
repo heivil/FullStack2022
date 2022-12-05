@@ -1,17 +1,7 @@
 import Kysymys from './Kysymys'
-import plus from './plus.png'
+import plus from './plus.png' 
 
-
-//semmonen perstuntuma että tarvii userefiä käyttää jotenkin tässä kait ehkä mahdollisesti.....maybe 
 const Tentti = (props) => {
-  let maxPisteet = 0, minPisteet = 0;
-
-  const pisteLaskuri = (lisäys) => {
-    console.log(lisäys)
-    maxPisteet += lisäys
-    minPisteet = maxPisteet / 2
-    return minPisteet
-  }
 
   return (
     <div>
@@ -22,11 +12,12 @@ const Tentti = (props) => {
             id: props.tentti.id,
             ten_nimi: event.target.value
           }})}} value = {props.tentti.ten_nimi}/>
-        <p>Läpäisyyn vaadittavat pisteet: {minPisteet}</p>
+        <p>Läpäisyyn vaadittavat pisteet: {props.tentti.minPisteet}</p>
+        <p>Maksimipisteet: {props.tentti.maxPisteet}</p>
       </div><br/>
       <div>Kysymykset: </div>
       <div>{props.tentti.kysymykset !== undefined && props.tentti.kysymykset.length > 0 && props.tentti.kysymykset.map((kysymys, index) =>
-        <Kysymys key = {index} kysymys={kysymys} dispatch = {props.dispatch} kysymysIndex = {index} tentti = {props.tentti} moodi={props.moodi} pisteLaskuri = {pisteLaskuri}/>)} 
+        <Kysymys key = {index} kysymys={kysymys} dispatch = {props.dispatch} kysymysIndex = {index} tentti = {props.tentti} moodi={props.moodi}/>)} 
         {props.moodi && 
         <>
         <img className='Image-nappi' src={plus} alt="Lisää kysymys" onClick={(event) => {props.dispatch({type: 'LISÄÄ_KYSYMYS', payload: {tentti_id: props.tentti.id}})}} />

@@ -25,17 +25,21 @@ const lataaTenttiIdllä = async (req, res) => {
       kysymykset = kys.rows
     }
     const vas = await pool.query(`SELECT vastaus.id, kysymys_id, vas_nimi, pisteet, onko_oikein, kys_nimi, tentti_id FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id = ${req.params.tentti_id} ORDER BY id ASC`)
+    let maxPisteet = 0
     if(vas.rows.length > 0){
       for(i = 0; i < vas.rows.length; i++){
         for(j = 0; j < kysymykset.length; j++){
           kysymykset[j].vastaukset === undefined && (kysymykset[j].vastaukset = [])
           if(kysymykset[j].id === vas.rows[i].kysymys_id){
             kysymykset[j].vastaukset.push(vas.rows[i])
+            maxPisteet += vas.rows[i].pisteet
           }
         }
       } 
     }
     tentti.kysymykset = kysymykset
+    tentti.maxPisteet = maxPisteet
+    tentti.minPisteet = maxPisteet/2
     
     res.status(200).send(tentti)
   }catch(err){
