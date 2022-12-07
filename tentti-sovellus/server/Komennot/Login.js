@@ -68,7 +68,6 @@ const verifoiToken = (req, res, next) =>{
 } 
 
 const onkoAdmin = async (req, res, next) => {
-
   try {
     result = await pool.query("SELECT * FROM kayttaja WHERE tunnus = $1 ", [req.decoded?.tunnus])
     let admin = result.rows[0].onko_admin

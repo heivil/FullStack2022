@@ -18,7 +18,8 @@ const App = () => {
     tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: false, tenttiNäkymä: false, kirjauduRuutu: true, darkMode: false,
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
-    poistettuData: { tentit: [], kysymykset: [], vastaukset: [] }
+    poistettuData: { tentit: [], kysymykset: [], vastaukset: [] },
+    käyttäjänVastaukset: []
   });
 
   const [ajastin, setAjastin] = useState()
@@ -74,7 +75,7 @@ const App = () => {
     console.log("lis", lisätty, "muu", muutettu, "pois", poistettu)
     if (lisätty.tentit.length > 0) {
       for (let i = 0; i < lisätty.tentit.length; i++) {
-        await axios.post(`https://localhost:8080/lisaaTentti/nimi/${lisätty.tentit[i].ten_nimi}/min_pisteet/10`)//täällä hard koodattu 10 pistemääräksi!!!
+        await axios.post(`https://localhost:8080/lisaaTentti/nimi/${lisätty.tentit[i].ten_nimi}`)
         await getData(0) //koska tentti vasta lisättiin haetaan uusin tentti argumentilla 0
       }
     }
@@ -132,7 +133,11 @@ const App = () => {
   }
 
   const tallennaTenttisuoritus = async () => {
-    
+    try{                                                                                              //ei pysty lähettämään listaa tälleen...ylläri:D
+      await axios.post(`https://localhost:8080/tallennaSuoritus/tentti_id/${data.tentti.id}/vastaukset/${data.käyttäjänVastaukset}/pisteet/0/min_pisteet/${data.tentti.minPisteet}`)
+    }catch(err){
+      console.log(err)
+    }
   }
 
   const getData = async (tentti_id) => {

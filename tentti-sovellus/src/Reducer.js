@@ -125,6 +125,16 @@ function reducer(state, action) {
 
         return{...state, darkMode: action.payload}
 
+    case 'LISÄÄ_KÄYTTÄJÄN_VASTAUS':
+
+      dataKopio.käyttäjänVastaukset.push(action.payload)
+      return{...state, käyttäjänVastaukset: dataKopio.käyttäjänVastaukset}
+
+    case 'POISTA_KÄYTTÄJÄN_VASTAUS':
+
+      dataKopio.käyttäjänVastaukset = dataKopio.käyttäjänVastaukset.filter(id => id !== action.payload)
+      return{...state, käyttäjänVastaukset: dataKopio.käyttäjänVastaukset}
+
     default:
       throw new Error("Reduceriin tultiin oudosti.");
   }
