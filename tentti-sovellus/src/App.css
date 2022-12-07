@@ -1,6 +1,7 @@
 :root{
   --bg: url(BG.png);
   --fontColor: black;
+  --headerColor: black;
 }
 
 .Main-content {
@@ -14,7 +15,7 @@ body{
 }
 
 .App-header {
-  background-color: #00297a;
+  background-color: var(--headerColor);
   min-height: 40px;
   display: flex;
   flex-direction: row;

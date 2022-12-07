@@ -55,7 +55,7 @@ app.get('/tentit', (req, res) => {
   tentit.lataaTentit(req, res)
 })
 
-app.post('/tallennaSuoritus/', käyttäjät.tallennaVastaukset, (req, res) => {
+app.post('/tallennaSuoritus/', käyttäjät.laskePisteet, (req, res) => {
   käyttäjät.tallennaSuoritus(req, res)
 })
 

@@ -45,6 +45,7 @@ const App = () => {
 
   useEffect(() => {
     const saveData = () => {
+
       if (data.opettajaMoodi) {
         try {
           console.log("Muutokset tallennetaan")
@@ -55,11 +56,13 @@ const App = () => {
         }
       } else {
         try{
-
+          console.log("Tenttisuoritus tallennetaan")
+          tallennaTenttisuoritus()
         }catch (err){
-
+          console.log("Virhe tallennettaessa", err)
         }
       }
+
       dispatch({ type: 'PÄIVITÄ_TALLENNUSTILA', payload: false })
     }
     if (data.tallennetaanko === true) {
@@ -128,6 +131,10 @@ const App = () => {
     }
   }
 
+  const tallennaTenttisuoritus = async () => {
+    
+  }
+
   const getData = async (tentti_id) => {
     try {
       const resTentti = await axios.get(`https://localhost:8080/tentti/id/${tentti_id}`);
@@ -183,7 +190,7 @@ const App = () => {
             <button className="dropbtn">Tentit</button>
             <div className="dropdown-content">
               {data.tentit.tenttiLista.map((tent) =>
-                <a onClick={() =>
+                <a className="Nappi" onClick={() =>
                   getData(tent.id)}
                   key={tent.id}>{tent.ten_nimi}</a>)}
             </div>
@@ -212,7 +219,6 @@ const App = () => {
       {!data.tenttiNäkymä &&
         <div className='Main-content'>
           <div> {<KirjauduRuutu kirjaudu={data.kirjauduRuutu} kirjauduSisään={kirjauduSisään} rekisteröiUusi={rekisteröiUusi} />} </div>
-
         </div>}
     </div>
   );

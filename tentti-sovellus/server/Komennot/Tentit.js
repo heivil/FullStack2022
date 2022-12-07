@@ -4,7 +4,6 @@ const pool = require("../db")
 const lataaTenttiIdllä = async (req, res) => {
   let tentti = {ten_nimi: "Nimetön tentti"}
   let kysymykset = []
-  
   console.log("Ladataan dataa tietokannasta", req.params)
   try{
     let ten
@@ -24,14 +23,24 @@ const lataaTenttiIdllä = async (req, res) => {
     if(kys.rows.length > 0){
       kysymykset = kys.rows
     }
-    const vas = await pool.query(`SELECT vastaus.id, kysymys_id, vas_nimi, pisteet, onko_oikein, kys_nimi, tentti_id FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id = ${req.params.tentti_id} ORDER BY id ASC`)
+    const vas = await pool.query(`SELECT vastaus.id, kysymys_id, vas_nimi, pisteet, onko_oikein, tentti_id FROM vastaus INNER JOIN kysymys ON kysymys.id = vastaus.kysymys_id WHERE kysymys.tentti_id = ${req.params.tentti_id} ORDER BY id ASC`)
     let maxPisteet = 0
     if(vas.rows.length > 0){
       for(i = 0; i < vas.rows.length; i++){
         for(j = 0; j < kysymykset.length; j++){
           kysymykset[j].vastaukset === undefined && (kysymykset[j].vastaukset = [])
           if(kysymykset[j].id === vas.rows[i].kysymys_id){
-            kysymykset[j].vastaukset.push(vas.rows[i])
+            if(req.decoded.onko_admin == true){
+              kysymykset[j].vastaukset.push(vas.rows[i])
+            }else {
+              kysymykset[j].vastaukset.push({
+                id: vas.rows[i].id,
+                kysymys_id: vas.rows[i].kysymys_id,
+                tentti_id: vas.rows[i].tentti_id,
+                vas_nimi: vas.rows[i].vas_nimi
+              })
+            }
+
             if(vas.rows[i].pisteet > 0) maxPisteet += vas.rows[i].pisteet
           }
         }
