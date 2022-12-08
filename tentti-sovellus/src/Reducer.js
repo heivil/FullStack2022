@@ -126,12 +126,12 @@ function reducer(state, action) {
         return{...state, darkMode: action.payload}
 
     case 'LISÄÄ_KÄYTTÄJÄN_VASTAUS':
-
+      console.log("Suoritukseen lisätään vastaus:", action.payload)
       dataKopio.käyttäjänVastaukset.push(action.payload)
       return{...state, käyttäjänVastaukset: dataKopio.käyttäjänVastaukset}
 
     case 'POISTA_KÄYTTÄJÄN_VASTAUS':
-
+      console.log("Suorituksesta poistetaan vastaus: ", action.payload)
       dataKopio.käyttäjänVastaukset = dataKopio.käyttäjänVastaukset.filter(id => id !== action.payload)
       return{...state, käyttäjänVastaukset: dataKopio.käyttäjänVastaukset}
 

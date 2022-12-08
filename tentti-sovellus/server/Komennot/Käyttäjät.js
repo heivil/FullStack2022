@@ -18,12 +18,16 @@ const pool = require("../db")
   }
 } */
 
-const laskePisteet = async (req, res) => {
+const laskePisteet = async (req, res, next) => {
+  dataObj = JSON.parse(req.body.data)
+  console.log("Lasketaan pisteitä")
   try {
-    if (req.params.vastaukset.length > 0) {
-      for (let i = 0; i < req.params.vastaukset.length; i++) {
-        req.params.pisteet += await pool.query(`SELECT pisteet FROM vastaus WHERE id = ${req.params.vastaukset[i]}`)
+    if (dataObj.vastaukset.length > 0) {
+      for (let i = 0; i < dataObj.vastaukset.length; i++) {
+        vastPisteet = await pool.query(`SELECT pisteet FROM vastaus WHERE id = ${dataObj.vastaukset[i]}`)
+        dataObj.pisteet += vastPisteet.rows[0].pisteet
       }
+      req.body.data = JSON.stringify(dataObj)
       next()
     } else {
       res.status(400).send("Vastauksia ei annettu")
@@ -33,17 +37,16 @@ const laskePisteet = async (req, res) => {
   }
 }
 
-const tallennaSuoritus = async (req, res) => {
-  console.log("Tallennetaan tenttisuoritusta")
-  console.log("id", req.decoded.id)
+const tallennaSuoritus = async (req, res,) => {
+  dataObj = JSON.parse(req.body.data)
   let meniköLäpi = false
-  if (req.params.pisteet > req.params.min_pisteet) {
+  if (dataObj.pisteet >= dataObj.min_pisteet) {
     meniköLäpi = true
   }
   try {
-    let result = await pool.query("INSERT INTO kayttajan_tentit (kayttajan_id, tentti_id, onko_suoritettu, pisteet) VALUES ($1, $2, $3, $4)",
-      [req.decoded.id, req.params.tentti_id, meniköLäpi, req.params.pisteet])
-    res.status(200).send("Tenttisuoritus tallennettu: " + result)
+    await pool.query("INSERT INTO kayttajan_tentit (kayttajan_id, tentti_id, onko_suoritettu, pisteet) VALUES ($1, $2, $3, $4)",
+    [req.decoded.id, dataObj.tentti_id, meniköLäpi, dataObj.pisteet])
+    res.status(200).send("Tenttisuoritus tallennettu")
   } catch (err) {
     res.status(500).send(err)
   }

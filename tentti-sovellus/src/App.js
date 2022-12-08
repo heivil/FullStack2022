@@ -133,8 +133,14 @@ const App = () => {
   }
 
   const tallennaTenttisuoritus = async () => {
-    try{                                                                                              //ei pysty lähettämään listaa tälleen...ylläri:D
-      await axios.post(`https://localhost:8080/tallennaSuoritus/tentti_id/${data.tentti.id}/vastaukset/${data.käyttäjänVastaukset}/pisteet/0/min_pisteet/${data.tentti.minPisteet}`)
+    const suoritus = {
+      tentti_id: data.tentti.id,
+      vastaukset: data.käyttäjänVastaukset,
+      pisteet: 0,
+      min_pisteet: data.tentti.minPisteet
+    }
+    try{
+      await axios.post(`https://localhost:8080/tallennaSuoritus`, {data: JSON.stringify(suoritus)})
     }catch(err){
       console.log(err)
     }

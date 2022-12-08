@@ -55,8 +55,8 @@ app.get('/tentit', (req, res) => {
   tentit.lataaTentit(req, res)
 })
 
-app.post('/tallennaSuoritus/tentti_id/:tentti_id/vastaukset/:vastaukset/pisteet/:pisteet/min_pisteet/:min_pisteet', käyttäjät.laskePisteet, (req, res) => {
-    käyttäjät.tallennaSuoritus(req, res)
+app.post('/tallennaSuoritus', käyttäjät.laskePisteet, (req, res, next) => {
+  käyttäjät.tallennaSuoritus(req, res)
 })
 
 app.use(login.onkoAdmin)
