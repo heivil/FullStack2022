@@ -4,10 +4,10 @@ const KirjauduRuutu = (props) => {
       <h2>{props.kirjaudu ? "Kirjaudu" : "Rekisteröidy"}</h2>
       <form>
       <label>Käyttäjätunnus: <br/>
-        <input type="text" id="Tunnus" value={"kalle"} onChange={() => {}}/>
+        <input type="text" id="Tunnus"/>
       </label><br/>
       <label>Salasana: <br/>
-        <input type="text" id="Salasana" value={"kalle"} onChange={() => {}}/>
+        <input type="text" id="Salasana"/>
       </label><br/>
       {!props.kirjaudu && <label>Salasana uudestaan: (eitoimivielä) <br/><input type="text" id="Salasana uudestaan"/></label>}<br/>
       {!props.kirjaudu && <label>Admin<input type="checkbox" id="Admin"/></label>}

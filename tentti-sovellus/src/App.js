@@ -2,7 +2,6 @@ import './App.css';
 import Tentti from './Tentti';
 import React, { useState, useReducer, useEffect } from 'react';
 import axios from 'axios'
-/* jest.mock("axios"); */
 import KirjauduRuutu from './Kirjaudu';
 import DBG from './DBG.png';
 import BG from './BG.png';
@@ -15,8 +14,8 @@ const App = () => {
   /*   const defaultTentti = { ten_nimi: "Default tentti", kysymykset: [{ kys_nimi: "Kysymys", id: 0, vastaukset: [{ vas_nimi: "Vastaus 1", kysymys_id: 0 }] }] }
     const defaultKäyttäjä = { käyttäjätunnus: "", salasana: "", tentti_id: 0, onko_admin: false } */
 
-  const [data, dispatch] = useReducer(reducer.reducer, {                //tenttinäkymä ja opemoodi true testausta varten
-    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: true, tenttiNäkymä: true, kirjauduRuutu: true, darkMode: false,
+  const [data, dispatch] = useReducer(reducer.reducer, {
+    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: false, tenttiNäkymä: false, kirjauduRuutu: true, darkMode: false,
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
     poistettuData: { tentit: [], kysymykset: [], vastaukset: [] },

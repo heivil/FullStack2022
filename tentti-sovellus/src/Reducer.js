@@ -73,7 +73,7 @@ function reducer(state, action) {
       dataKopio.lisättyData.tentit.push(uusiTentti)
       dataKopio.tentti = uusiTentti //staten tentiksi pitää asettaa tietokannasta saatu tentti
       console.log("tentti lisätty")
-      return { ...state, tentti: dataKopio.tentti, tentit: dataKopio.tentit, tietoAlustettu: true/*, lisättyData: dataKopio.lisättyData , tallennetaanko: true */ };
+      return { ...state, tentti: dataKopio.tentti, lisättyData: dataKopio.lisättyData, tallennetaanko: true };
 
     case 'LISÄÄ_KYSYMYS':
 

@@ -1,26 +1,62 @@
 import { render, screen, fireEvent} from '@testing-library/react';
 import App from './App';
+import Tentti from './Tentti';
 import userEvent from '@testing-library/user-event';
 import * as React from 'react';
 import axios from 'axios';
 
 jest.mock('axios');
 
-describe('App', () => {
-  it('renderöi sovelluksen consoliin', async () => {
+describe('Tenttitesti', () => {
+
+  it('Renderöi tentin',() => {
+
+    let tentti = { ten_nimi: "Testaustentti", kysymykset: [{ kys_nimi: "Miten menee testaus?", id: 0, vastaukset: [{ vas_nimi: "Niin ja näin", kysymys_id: 0 }] }], maxPisteet: 2, minPisteet: 1 }
+
+    const mockFunc = jest.fn(() => {
+      tentti = {ten_nimi: "Testaustentti", kysymykset: [{ kys_nimi: "Miten menee testaus?", id: 0, vastaukset: [{ vas_nimi: "Niin ja näin", kysymys_id: 0 }]}, { kys_nimi: "Toimiiko kysymyksen lisääminen?", vastaukset:[{vas_nimi: "toimii tietenkin", kysymys_id: 0}]}], maxPisteet: 2, minPisteet: 1 }
+      return tentti
+    });
+
+    render(<Tentti tentti={tentti} moodi={true} dispatch={mockFunc}/>);
+
+    expect(screen.queryByText(/Toimiiko kysymyksen lisääminen/)).toBeNull();
+
+    const lisääKysymys = screen.getByRole('img', {
+      name: 'Lisää kysymys'
+    })
+
+    expect(screen.getByText('Miten menee testaus?')).toBeInTheDocument();
+
+    userEvent.click(lisääKysymys);
+
+    render(<Tentti tentti={tentti} moodi={true} dispatch={mockFunc}/>);
+
+    expect(screen.queryByText(/Toimiiko kysymyksen lisääminen/)).toBeInTheDocument();
+
+    screen.debug();
+
+  })
+})
+
+
+
+/*   it('renderöi sovelluksen consoliin', () => {
     
-    const tentti = { ten_nimi: "Tentti", kysymykset: [{ kys_nimi: "Kysymys", id: 0, vastaukset: [{ vas_nimi: "Vastaus 1", kysymys_id: 0 }] }], maxPisteet: 2, minPisteet: 1 }
     //const tentit = {tenttejä: 1, tenttiLista:[tentti]}
     render(<App />);
+
+    screen.debug
+    
     const lisääNappi = screen.getByRole('button', {
       name: 'Lisää tentti'
     })
 
-    await userEvent.click(lisääNappi);
+    userEvent.click(lisääNappi);
     
     screen.debug
 
-/*     axios.get.mockImplementationOnce(() =>
+    axios.get.mockImplementationOnce(() =>
       Promise.resolve({ tentti })
     );
 
@@ -32,13 +68,14 @@ describe('App', () => {
 
    
 
-    await userEvent.click(screen.getByRole('button')); */
+    await userEvent.click(screen.getByRole('button'));
 
 
     screen.debug();
     
-  })
-})
+  }) */
+
+
 
 /* const tunnusKenttä = screen.getByRole('textbox', {
       name: 'Käyttäjätunnus:',
