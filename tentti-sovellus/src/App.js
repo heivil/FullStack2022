@@ -159,9 +159,10 @@ const App = () => {
 
   const kirjauduSisään = async (käyttäjä) => {
     try {
-      const result = await axios.get(`https://localhost:8080/kirjaudu/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}`);
+      const result = await axios.post(`https://localhost:8080/kirjaudu/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}`);
       if (result) {
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + result.data.data.token;
+        /* localStorage.setItem("refreshToken", result.data.data.refreshToken); */
         dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: result.data.data.onko_admin } })
         console.log("kirjaudu result:", result.data)
         getData(result.data.data.tentti_id)
@@ -169,6 +170,11 @@ const App = () => {
     } catch (err) {
       console.log("Virhe kirjautuessa", err)
     }
+  }
+
+  const kirjauduUlos = async () => {
+    localStorage.clear();
+    window.location.reload();
   }
 
   const rekisteröiUusi = async (käyttäjä) => {
@@ -213,6 +219,7 @@ const App = () => {
             }
           }}>Poista tentti</button>
           <button className="Nappi" onClick={() => vaihdaTeema()}>{data.darkMode ? 'Light Mode' : 'Dark Mode'}</button>
+          <button className="Nappi" onClick={() => kirjauduUlos()}>Kirjaudu Ulos</button>
         </div>}
       {!data.tenttiNäkymä &&
         <div className='App-header'>

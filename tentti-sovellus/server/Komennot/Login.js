@@ -1,7 +1,10 @@
+const dotenv = require('dotenv');
+dotenv.config({path: './../.env'})
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const pool = require("../db")
+
 
 const kirjaudu = async (req, res, next) => {
   console.log("kirjaudutaan")
@@ -17,7 +20,7 @@ const kirjaudu = async (req, res, next) => {
 
   } catch(err) {
     const error = new Error("Error! Jotain meni vikaan.", err);
-    res.status(500).send(err)
+    return res.status(500).send(err)
   }
 
 
@@ -26,45 +29,61 @@ const kirjaudu = async (req, res, next) => {
     res.status(500).send("väärä tunnuus tai salasana")
   } else {
     let token;
+    let refreshToken;
     try {
       //Creating jwt token
       token = jwt.sign(
         { id: existingUser.id, tunnus: existingUser.tunnus, onko_admin: existingUser.onko_admin },
-        "secretkeyappearshere",    //dotenv! -> tätä hyvä käyttää!! 
-        { expiresIn: "1h" }
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "10s" }
       );
-    } catch (err) {
-      console.log(err);
-      const error = new Error("Error! Something went wrong.");
-      res.status(500).send(err)
-    }
-  
-    res.status(200).json({
+
+      refreshToken = jwt.sign(
+        { id: existingUser.id, tunnus: existingUser.tunnus, onko_admin: existingUser.onko_admin },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: "2h" }
+      ); 
+
+      res.status(200).json({
         success: true,
         data: {
           id: existingUser.id,
           tunnus: existingUser.tunnus,
           tentti_id: existingUser.tentti_id,
           onko_admin: existingUser.onko_admin,
-          token: token
+          token: token,
+          refreshToken: refreshToken
         },
     });
+
+    } catch (err) {
+      console.log(err);
+      const error = new Error("Error! Something went wrong.");
+      res.status(500).send(err)
+    }
   }
 }
 
 const verifoiToken = (req, res, next) =>{
   //const token = req.params.token
   const token = req.headers.authorization?.split(' ')[1];
+
   //Authorization: 'Bearer TOKEN'
   if(!token)
   {
-      res.status(200).json({success:false, message: "Error!Token was not provided."});
+    return res.status(200).json({success:false, message: "Error!Token was not provided."});
   }
   //Decoding the token
-  const decodedToken = jwt.verify(token,"secretkeyappearshere" );
-  req.decoded = decodedToken
-  console.log("token: ", req.decoded)
-  next() 
+  var decodedToken=jwt.decode(token, {complete: true});
+  var dateNow = new Date();
+
+  if(decodedToken.payload.exp < dateNow.getTime() / 1000){
+    //uusi token jos refreshtoken on validi
+  }else{
+    req.decoded = decodedToken.payload
+    console.log("token: ", req.decoded)
+    next() 
+  }
 } 
 
 const onkoAdmin = async (req, res, next) => {
@@ -111,22 +130,6 @@ const rekisteröi = async (req, res, next) =>{
   }finally{
     client.release()
   }
-  /* let token;
-  try {
-    token = jwt.sign(
-      { id: result.rows[0].id, tunnus: tunnus },
-      "secretkeyappearshere",
-      { expiresIn: "1h" }
-    );
-  } catch (err) {
-    const error = new Error("Error! Something went wrong.");
-    return next(error);
-  }
-  res.status(201).json({
-      success: true,
-      data: { id: result.rows[0].id,
-        tunnus: tunnus, token: token },
-    }); */
 } 
 
 module.exports={
