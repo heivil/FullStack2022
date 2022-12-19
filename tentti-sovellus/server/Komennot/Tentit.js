@@ -17,6 +17,7 @@ const lataaTenttiIdllä = async (req, res) => {
       tentti = ten.rows[0]
     }else{
       res.status(404).send("Tenttiä ei löytynyt")
+      console.log("häh")
     }
     
     const kys = await pool.query(`SELECT * FROM kysymys WHERE tentti_id = ${req.params.tentti_id} ORDER BY id ASC`)
@@ -49,8 +50,8 @@ const lataaTenttiIdllä = async (req, res) => {
     tentti.kysymykset = kysymykset
     tentti.maxPisteet = maxPisteet
     tentti.minPisteet = maxPisteet/2
-    
-    res.status(200).send(tentti)
+    token = req.undecodedToken
+    res.status(200).send({tentti, token})
   }catch(err){
     res.status(500).send(err)
   } 

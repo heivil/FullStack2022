@@ -4,7 +4,9 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const pool = require("../db")
-
+const accessAika = "10m"
+const refreshAika = "2h"
+let refreshToken
 
 const kirjaudu = async (req, res, next) => {
   console.log("kirjaudutaan")
@@ -29,19 +31,18 @@ const kirjaudu = async (req, res, next) => {
     res.status(500).send("väärä tunnuus tai salasana")
   } else {
     let token;
-    let refreshToken;
+    
     try {
-      //Creating jwt token
       token = jwt.sign(
         { id: existingUser.id, tunnus: existingUser.tunnus, onko_admin: existingUser.onko_admin },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "10s" }
+        { expiresIn: accessAika }
       );
 
       refreshToken = jwt.sign(
         { id: existingUser.id, tunnus: existingUser.tunnus, onko_admin: existingUser.onko_admin },
         process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "2h" }
+        { expiresIn: refreshAika }
       ); 
 
       res.status(200).json({
@@ -55,7 +56,6 @@ const kirjaudu = async (req, res, next) => {
           refreshToken: refreshToken
         },
     });
-
     } catch (err) {
       console.log(err);
       const error = new Error("Error! Something went wrong.");
@@ -65,25 +65,63 @@ const kirjaudu = async (req, res, next) => {
 }
 
 const verifoiToken = (req, res, next) =>{
-  //const token = req.params.token
-  const token = req.headers.authorization?.split(' ')[1];
+  //TODO: sign on toistuvaa koodia, pistä omaan funktioon
+  //TODO: tarkista onko refreshToken vanhentunut jos on niin kirjaudu ulos
+  //TODO: tee tästä funktiosta vähemmän sekava :D 
+  let token
+  if(req.body.refreshToken !== undefined){
+    refreshToken = req.body.refreshToken
+    const decodedRefresh = jwt.decode(refreshToken, {complete: true});
 
-  //Authorization: 'Bearer TOKEN'
-  if(!token)
-  {
-    return res.status(200).json({success:false, message: "Error!Token was not provided."});
-  }
-  //Decoding the token
-  var decodedToken=jwt.decode(token, {complete: true});
-  var dateNow = new Date();
-
-  if(decodedToken.payload.exp < dateNow.getTime() / 1000){
-    //uusi token jos refreshtoken on validi
-  }else{
+    token = jwt.sign(
+      { id: decodedRefresh.payload.id, tunnus: decodedRefresh.payload.tunnus, onko_admin: decodedRefresh.payload.onko_admin },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: accessAika }
+    );
+    const decodedToken=jwt.decode(token, {complete: true});
     req.decoded = decodedToken.payload
+    req.undecodedToken = token
     console.log("token: ", req.decoded)
     next() 
-  }
+  }else{
+    token = req.headers.authorization?.split(' ')[1];
+    if(!token)
+    {
+      return res.status(200).json({success:false, message: "Error!Token was not provided."});
+    }
+
+    
+    if(refreshToken !== undefined){
+      const decodedToken=jwt.decode(token, {complete: true});
+      const dateNow = new Date();
+    
+      if(decodedToken.payload.exp < dateNow.getTime() / 1000){
+        const decodedRefresh = jwt.decode(refreshToken, {complete: true});
+        if(decodedRefresh.payload.exp < dateNow.getTime() / 1000){
+          token = jwt.sign(
+            { id: decodedRefresh.payload.id, tunnus: decodedRefresh.payload.tunnus, onko_admin: decodedRefresh.payload.onko_admin },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: accessAika }
+          );
+
+          decodedToken=jwt.decode(token, {complete: true});
+          req.decoded = decodedToken.payload
+          console.log("uusi token: ", req.decoded)
+          next() 
+        }else{
+          console.log("refresh token vanhentunut")
+          res.send("refresh token vanhentunut")
+        }
+      } else{
+        req.decoded = decodedToken.payload
+        console.log("token: ", req.decoded)
+        next() 
+      }
+    }else{
+      console.log("ei refresh tokenia")
+      res.send("ei refresh tokenia")
+    }
+  }    
 } 
 
 const onkoAdmin = async (req, res, next) => {

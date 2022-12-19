@@ -36,6 +36,15 @@ const App = () => {
   }
 
   useEffect(() => {
+    const refreshToken = localStorage.getItem("refreshToken")
+    const käyt = JSON.parse(localStorage.getItem("käyttäjä"))
+    if (refreshToken) {
+      dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: käyt.onko_admin } })
+      getData(käyt.tentti, refreshToken)
+    }
+  }, [])
+
+  useEffect(() => {
 
     if (data.muutettuData.tentit.length > 0 || data.muutettuData.kysymykset > 0 || data.muutettuData.vastaukset > 0 ||
       data.poistettuData.kysymykset > 0 || data.poistettuData.vastaukset > 0) {
@@ -146,14 +155,26 @@ const App = () => {
     }
   }
 
-  const getData = async (tentti_id) => {
-    try {
-      const resTentti = await axios.get(`https://localhost:8080/tentti/id/${tentti_id}`);
-      const resTentit = await axios.get(`https://localhost:8080/tentit/`);
-      console.log("Alustus result:", resTentti.data, resTentit.data)
-      dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data, tentit: resTentit.data } })
-    } catch (error) {
-      console.log("Virhe alustaessa: ", error)
+  const getData = async (tentti_id, rT) => {
+    if(rT !== undefined){
+      try {
+        const resTentti = await axios.post(`https://localhost:8080/tentti/id/${tentti_id}`, {refreshToken: rT});
+        axios.defaults.headers.common['Authorization'] = 'Bearer ' + resTentti.data.token;
+        const resTentit = await axios.get(`https://localhost:8080/tentit/`);
+        console.log("Alustus result:", resTentti.data.tentti, resTentit.data)
+        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data.tentti, tentit: resTentit.data } })
+      } catch (error) {
+        console.log("Virhe alustaessa: ", error)
+      }
+    }else{
+      try {
+        const resTentti = await axios.post(`https://localhost:8080/tentti/id/${tentti_id}`);
+        const resTentit = await axios.get(`https://localhost:8080/tentit/`);
+        console.log("Alustus result:", resTentti.data, resTentit.data)
+        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data.tentti, tentit: resTentit.data } })
+      } catch (error) {
+        console.log("Virhe alustaessa: ", error)
+      }
     }
   }
 
@@ -162,7 +183,9 @@ const App = () => {
       const result = await axios.post(`https://localhost:8080/kirjaudu/tunnus/${käyttäjä.tunnus}/salasana/${käyttäjä.salasana}`);
       if (result) {
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + result.data.data.token;
-        /* localStorage.setItem("refreshToken", result.data.data.refreshToken); */
+        localStorage.setItem("refreshToken", result.data.data.refreshToken);
+        const käyt = {id: result.data.data.id, onko_admin: result.data.data.onko_admin, tentti: result.data.data.tentti_id }
+        localStorage.setItem("käyttäjä", JSON.stringify(käyt));
         dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: result.data.data.onko_admin } })
         console.log("kirjaudu result:", result.data)
         getData(result.data.data.tentti_id)

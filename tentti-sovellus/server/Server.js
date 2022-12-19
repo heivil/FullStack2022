@@ -45,17 +45,9 @@ app.post('/kirjaudu/tunnus/:tunnus/salasana/:salasana', (req, res) => {
   login.kirjaudu(req, res)
 })
 
-app.post('/uloskirjaus', (req, res) => {
-  try{
-    localStorage.clear();
-  }catch(err){
-    res.status(500).send(err)
-  }
-})
-
 app.use(login.verifoiToken) 
 
-app.get('/tentti/id/:tentti_id', (req, res) => { 
+app.post('/tentti/id/:tentti_id', (req, res) => { 
   tentit.lataaTenttiIdllä(req, res)
 })
 
