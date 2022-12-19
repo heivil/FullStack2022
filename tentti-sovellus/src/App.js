@@ -5,21 +5,18 @@ import axios from 'axios'
 import KirjauduRuutu from './Kirjaudu';
 import DBG from './DBG.png';
 import BG from './BG.png';
-import reducer from './Reducer.js'
-
-//useref --> siirtää fokuksen tiettyyn komponenttiin esim tekstikenttä yms
+import reducer from './Reducer.js';
+import lahjoja from './lahjoja.png';
+import eiLahjoja from './Joulukakka.png';
 
 const App = () => {
-
-  /*   const defaultTentti = { ten_nimi: "Default tentti", kysymykset: [{ kys_nimi: "Kysymys", id: 0, vastaukset: [{ vas_nimi: "Vastaus 1", kysymys_id: 0 }] }] }
-    const defaultKäyttäjä = { käyttäjätunnus: "", salasana: "", tentti_id: 0, onko_admin: false } */
 
   const [data, dispatch] = useReducer(reducer.reducer, {
     tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: false, tenttiNäkymä: false, kirjauduRuutu: true, darkMode: false,
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
     poistettuData: { tentit: [], kysymykset: [], vastaukset: [] },
-    käyttäjänVastaukset: []
+    käyttäjänVastaukset: [], näytäSuoritus: false , tenttiSuoritus: {läpi: false, pisteet: 0}
   });
 
   const [ajastin, setAjastin] = useState()
@@ -149,7 +146,8 @@ const App = () => {
       min_pisteet: data.tentti.minPisteet
     }
     try{
-      await axios.post(`https://localhost:8080/tallennaSuoritus`, {data: JSON.stringify(suoritus)})
+      const result = await axios.post(`https://localhost:8080/tallennaSuoritus`, {data: JSON.stringify(suoritus)})
+      dispatch({type: 'NÄYTÄ_SUORITUS', payload: {pisteet: result.data.pisteet, läpi: result.data.läpi}})
     }catch(err){
       console.log(err)
     }
@@ -252,9 +250,20 @@ const App = () => {
           <button className="Nappi" onClick={() => vaihdaTeema()}>{data.darkMode ? 'Light Mode' : 'Dark Mode'}</button>
         </div>}
 
-      {data.tenttiNäkymä &&
+      {data.tenttiNäkymä && !data.näytäSuoritus &&
         <div className='Main-content'>
           <div> {data.tietoAlustettu && <Tentti tentti={data.tentti} moodi={data.opettajaMoodi} dispatch={dispatch} />} </div>
+          {<button className='Nappi' onClick={() => { dispatch({ type: 'PÄIVITÄ_TALLENNUSTILA', payload: true }); lopetaAjastin() }}>Tallenna tiedot</button>}
+        </div>}
+        {data.tenttiNäkymä && data.näytäSuoritus &&
+        <div className='Main-content'>
+          <div> {data.tentti.ten_nimi} </div>
+          <div> {data.tenttiSuoritus.pisteet} </div>
+          <div> 
+            {data.tenttiSuoritus.läpi && <> <div> Suoritus hyväksytty, lahjoja tulossa! </div> <img src={lahjoja} alt="lahjoja.png"/></>} 
+            {!data.tenttiSuoritus.läpi && <> <div> Suoritus hylätty, ei tule lahjoja! </div> <img src={eiLahjoja} alt="eiLahjoja.png"/> </>} 
+          </div>
+
           {<button className='Nappi' onClick={() => { dispatch({ type: 'PÄIVITÄ_TALLENNUSTILA', payload: true }); lopetaAjastin() }}>Tallenna tiedot</button>}
         </div>}
       {!data.tenttiNäkymä &&

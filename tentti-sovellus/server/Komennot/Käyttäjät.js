@@ -46,7 +46,7 @@ const tallennaSuoritus = async (req, res,) => {
   try {
     await pool.query("INSERT INTO kayttajan_tentit (kayttajan_id, tentti_id, onko_suoritettu, pisteet) VALUES ($1, $2, $3, $4)",
     [req.decoded.id, dataObj.tentti_id, meniköLäpi, dataObj.pisteet])
-    res.status(200).send("Tenttisuoritus tallennettu")
+    res.status(200).send({pisteet: dataObj.pisteet, läpi: meniköLäpi})
   } catch (err) {
     res.status(500).send(err)
   }

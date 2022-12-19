@@ -135,6 +135,12 @@ function reducer(state, action) {
       dataKopio.käyttäjänVastaukset = dataKopio.käyttäjänVastaukset.filter(id => id !== action.payload)
       return{...state, käyttäjänVastaukset: dataKopio.käyttäjänVastaukset}
 
+    case 'NÄYTÄ_SUORITUS':
+
+    dataKopio.tenttiSuoritus = {läpi: action.payload.läpi, pisteet: action.payload.pisteet}
+    console.log("esd",dataKopio.tenttiSuoritus)
+    return{...state, näytäSuoritus: true, tenttiSuoritus: dataKopio.tenttiSuoritus }
+
     default:
       throw new Error("Reduceriin tultiin oudosti.");
   }
