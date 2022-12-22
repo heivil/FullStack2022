@@ -65,7 +65,7 @@ app.post('/lisaaTentti/nimi/:nimi', (req, res) => {
   tentit.lisääTentti(req, res)
 })
 
-app.put('/muutaTentti/id/:id/nimi/:ten_nimi', (req, res) =>{
+app.put('/muutaTentti/id/:id/nimi/:ten_nimi/:xmin', (req, res) =>{
   tentit.muutaTentti(req, res)
 })
  

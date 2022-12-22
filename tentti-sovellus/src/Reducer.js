@@ -111,7 +111,7 @@ function reducer(state, action) {
 
     case 'ALUSTA_DATA':
 
-      return {...state, tentti: action.payload.tentti, tentit: action.payload.tentit, tietoAlustettu: true,};
+      return {...state, tentti: action.payload.tentti, tentit: action.payload.tentit, tietoAlustettu: true, xmin: action.payload.xmin};
 
     case 'KIRJAUDU_RUUTU':
 

@@ -16,7 +16,7 @@ const App = () => {
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
     poistettuData: { tentit: [], kysymykset: [], vastaukset: [] },
-    käyttäjänVastaukset: [], näytäSuoritus: false , tenttiSuoritus: {läpi: false, pisteet: 0}
+    käyttäjänVastaukset: [], näytäSuoritus: false , tenttiSuoritus: {läpi: false, pisteet: 0}, xmin:0
   });
 
   const [ajastin, setAjastin] = useState()
@@ -102,7 +102,7 @@ const App = () => {
 
     if (muutettu.tentit.length > 0) {
       for (let i = 0; i < muutettu.tentit.length; i++) {
-        await axios.put(`https://localhost:8080/muutaTentti/id/${muutettu.tentit[i].id}/nimi/${muutettu.tentit[i].ten_nimi}`)
+        await axios.put(`https://localhost:8080/muutaTentti/id/${muutettu.tentit[i].id}/nimi/${muutettu.tentit[i].ten_nimi}/${data.xmin}`)
       }
     }
 
@@ -160,7 +160,7 @@ const App = () => {
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + resTentti.data.token;
         const resTentit = await axios.get(`https://localhost:8080/tentit/`);
         console.log("Alustus result:", resTentti.data.tentti, resTentit.data)
-        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data.tentti, tentit: resTentit.data } })
+        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data.tentti, tentit: resTentit.data, xmin: resTentti.data.xmin} })
       } catch (error) {
         console.log("Virhe alustaessa: ", error)
       }
@@ -169,7 +169,7 @@ const App = () => {
         const resTentti = await axios.post(`https://localhost:8080/tentti/id/${tentti_id}`);
         const resTentit = await axios.get(`https://localhost:8080/tentit/`);
         console.log("Alustus result:", resTentti.data, resTentit.data)
-        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data.tentti, tentit: resTentit.data } })
+        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data.tentti, tentit: resTentit.data, xmin: resTentti.data.xmin } })
       } catch (error) {
         console.log("Virhe alustaessa: ", error)
       }
@@ -258,7 +258,7 @@ const App = () => {
         {data.tenttiNäkymä && data.näytäSuoritus &&
         <div className='Main-content'>
           <div> {data.tentti.ten_nimi} </div>
-          <div> {data.tenttiSuoritus.pisteet} </div>
+          <div> pisteet: {data.tenttiSuoritus.pisteet} </div>
           <div> 
             {data.tenttiSuoritus.läpi && <> <div> Suoritus hyväksytty, lahjoja tulossa! </div> <img src={lahjoja} alt="lahjoja.png"/></>} 
             {!data.tenttiSuoritus.läpi && <> <div> Suoritus hylätty, ei tule lahjoja! </div> <img src={eiLahjoja} alt="eiLahjoja.png"/> </>} 

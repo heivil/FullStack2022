@@ -7,7 +7,7 @@ const KirjauduRuutu = (props) => {
         <input type="text" id="Tunnus"/>
       </label><br/>
       <label>Salasana: <br/>
-        <input type="text" id="Salasana"/>
+        <input type="password" id="Salasana"/>
       </label><br/>
       {!props.kirjaudu && <label>Salasana uudestaan: (eitoimivielä) <br/><input type="text" id="Salasana uudestaan"/></label>}<br/>
       {!props.kirjaudu && <label>Admin<input type="checkbox" id="Admin"/></label>}

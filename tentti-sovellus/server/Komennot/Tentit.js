@@ -4,13 +4,16 @@ const pool = require("../db")
 const lataaTenttiIdllä = async (req, res) => {
   let tentti = {ten_nimi: "Nimetön tentti"}
   let kysymykset = []
+  let xmin
   console.log("Ladataan dataa tietokannasta", req.params)
   try{
     let ten
     if(req.params.tentti_id > 0){
-       ten = await pool.query(`SELECT * FROM tentti WHERE id = ${req.params.tentti_id}`)
+      xmin = await pool.query(`SELECT xmin FROM tentti where id = ${req.params.tentti_id}`)
+      console.log("xmin: ssss ", xmin.rows)
+      ten = await pool.query(`SELECT * FROM tentti WHERE id = ${req.params.tentti_id}`)
     }else{
-       ten = await pool.query(`SELECT * FROM tentti ORDER BY id DESC`)
+      ten = await pool.query(`SELECT * FROM tentti ORDER BY id DESC`)
     }
 
     if(ten.rows.length > 0){
@@ -51,7 +54,8 @@ const lataaTenttiIdllä = async (req, res) => {
     tentti.maxPisteet = maxPisteet
     tentti.minPisteet = maxPisteet/2
     token = req.undecodedToken
-    res.status(200).send({tentti, token})
+    xmin = xmin.rows[0]
+    res.status(200).send({tentti, token, xmin})
   }catch(err){
     res.status(500).send(err)
   } 
@@ -87,8 +91,16 @@ const lisääTentti = async (req, res) => {
 const muutaTentti = async (req, res) => {
   console.log("Muutetaan tentin tietoja")
   try{
-    let result = await pool.query(`UPDATE tentti SET ten_nimi = '${req.params.ten_nimi}' WHERE id = ${req.params.id}`)
-    res.status(200).send(result)
+    let xmin = await pool.query(`SELECT xmin FROM tentti WHERE id = ${req.params.id}` )
+    if(req.params.xmin == xmin){
+      console.log("katotaas")
+      let result = await pool.query(`UPDATE tentti SET ten_nimi = '${req.params.ten_nimi}' WHERE id = ${req.params.id}` )
+      res.status(200).send(result)
+    }else{
+      res.status(400).send("joku muu on tehnyt muutoksia")
+    }
+    
+    
   }catch(err){
     res.status(500).send(err)
   }
