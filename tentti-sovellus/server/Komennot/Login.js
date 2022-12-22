@@ -92,7 +92,7 @@ const verifoiToken = (req, res, next) =>{
 
     
     if(refreshToken !== undefined){
-      const decodedToken=jwt.decode(token, {complete: true});
+      let decodedToken=jwt.decode(token, {complete: true});
       const dateNow = new Date();
     
       if(decodedToken.payload.exp < dateNow.getTime() / 1000){

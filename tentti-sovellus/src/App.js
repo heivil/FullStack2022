@@ -102,7 +102,16 @@ const App = () => {
 
     if (muutettu.tentit.length > 0) {
       for (let i = 0; i < muutettu.tentit.length; i++) {
-        await axios.put(`https://localhost:8080/muutaTentti/id/${muutettu.tentit[i].id}/nimi/${muutettu.tentit[i].ten_nimi}/${data.xmin}`)
+        try{
+          const result = await axios.put(`https://localhost:8080/muutaTentti/id/${muutettu.tentit[i].id}/nimi/${muutettu.tentit[i].ten_nimi}/${data.xmin}`)
+          if(result.status === 205){
+            if (window.confirm("Joku muu on jo tehnyt muutoksia tähän tenttiin. Haluatko ladata sivun uudelleen päivitetyillä tiedoilla?")) {
+              window.location.reload();
+            }
+          }
+        }catch (err){
+          console.log("errrrr", err)
+        }
       }
     }
 

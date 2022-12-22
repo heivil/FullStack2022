@@ -33,7 +33,7 @@ function reducer(state, action) {
       if (!dataKopio.muutettuData.tentit.some(ten => ten.id === action.payload.id)) {
         dataKopio.muutettuData.tentit.push(dataKopio.tentti)
       } else {
-        dataKopio.muutettuData.tentit.some(ten => ten.id === action.payload.id && (ten.id = action.payload.id))
+        dataKopio.muutettuData.tentit.some(ten => ten.id === action.payload.id && (ten.ten_nimi = action.payload.ten_nimi))
       }
       return { ...state, tentti: dataKopio.tentti, muutettuData: dataKopio.muutettuData };
 

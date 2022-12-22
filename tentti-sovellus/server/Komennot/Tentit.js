@@ -10,7 +10,6 @@ const lataaTenttiIdllä = async (req, res) => {
     let ten
     if(req.params.tentti_id > 0){
       xmin = await pool.query(`SELECT xmin FROM tentti where id = ${req.params.tentti_id}`)
-      console.log("xmin: ssss ", xmin.rows)
       ten = await pool.query(`SELECT * FROM tentti WHERE id = ${req.params.tentti_id}`)
     }else{
       ten = await pool.query(`SELECT * FROM tentti ORDER BY id DESC`)
@@ -93,14 +92,11 @@ const muutaTentti = async (req, res) => {
   try{
     let xmin = await pool.query(`SELECT xmin FROM tentti WHERE id = ${req.params.id}` )
     if(req.params.xmin == xmin){
-      console.log("katotaas")
       let result = await pool.query(`UPDATE tentti SET ten_nimi = '${req.params.ten_nimi}' WHERE id = ${req.params.id}` )
       res.status(200).send(result)
     }else{
-      res.status(400).send("joku muu on tehnyt muutoksia")
+      res.status(205).send("Joku muu on tehnyt muutoksia.")
     }
-    
-    
   }catch(err){
     res.status(500).send(err)
   }
