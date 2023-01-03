@@ -6,17 +6,25 @@ var serverinSoketti = null;
 var chättääjät = []
 
 var server = net.createServer((socket) => {
-
+	
 	socket.write('Echo server\r\n');
 	socket.write('Syötä tunnus');
-
 	chättääjät.push(socket)
+
+	const heitäUlos = () => {
+    socket.destroy()
+	}
+	socket.ajastin = setTimeout(heitäUlos, 20000);
 	
 	socket.on('error', (err) => {
 		console.log("Socketissa error: " + err)
 	})
 
 	socket.on('data', (data) => {
+		if(socket.ajastin) {
+			clearTimeout(socket.ajastin);
+			socket.ajastin = setTimeout(heitäUlos, 20000);
+		}
 		chättääjät.forEach((item) => {
 			if(socket.tunnus === undefined){
 				socket.tunnus = data
@@ -31,10 +39,6 @@ var server = net.createServer((socket) => {
 	socket.on('close', () => {
 		console.log('Connection closed');
 	});
-	
-	/* const disconnect = () => {
-		clearTimeout(ajastin)
-	} */
 
 	//socket.pipe(socket);
 });
