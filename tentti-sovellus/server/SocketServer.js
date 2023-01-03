@@ -4,6 +4,7 @@ var net = require('net');
 var serverinSoketti = null;
 
 var chättääjät = []
+const kiroSanat = ["vittu", "perkele", "saatana", "kyrpä", "homo", "huora", "paska", "kusi", "jumalauta", "helvetti", "johanna tukiainen" ]
 
 var server = net.createServer((socket) => {
 	
@@ -12,18 +13,28 @@ var server = net.createServer((socket) => {
 	chättääjät.push(socket)
 
 	const heitäUlos = () => {
+		clearTimeout(socket.ajastin);
+		console.log("heitetään ulos")
     socket.destroy()
 	}
-	socket.ajastin = setTimeout(heitäUlos, 20000);
+	socket.ajastin = setTimeout(heitäUlos, 30000);
 	
 	socket.on('error', (err) => {
 		console.log("Socketissa error: " + err)
 	})
 
 	socket.on('data', (data) => {
+		for(i = 0; i < kiroSanat.length; i++){
+			if(data.toString().toLowerCase().includes(kiroSanat[i])){
+				console.log("Kiroilu ei ole sallittu")
+				socket.write('Eipä kiroilla');
+				heitäUlos()
+				return
+			}
+		}
 		if(socket.ajastin) {
 			clearTimeout(socket.ajastin);
-			socket.ajastin = setTimeout(heitäUlos, 20000);
+			socket.ajastin = setTimeout(heitäUlos, 30000);
 		}
 		chättääjät.forEach((item) => {
 			if(socket.tunnus === undefined){
@@ -45,16 +56,3 @@ var server = net.createServer((socket) => {
 
 
 server.listen(1337, '127.0.0.1');
-
-/*
-And connect with a tcp client from the command line using netcat, the *nix
-utility for reading and writing across tcp/udp network connections.  I've only
-used it for debugging myself.
-$ netcat 127.0.0.1 1337
-You should see:
-> Echo server
-*/
-
-/* Or use this example tcp client written in node.js.  (Originated with
-example code from
-http://www.hacksparrow.com/tcp-socket-programming-in-node-js.html.) */
