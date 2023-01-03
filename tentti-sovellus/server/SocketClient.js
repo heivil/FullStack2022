@@ -2,18 +2,17 @@ var net = require('net');
 var readline = require('readline');
 
 var client = new net.Socket();
+var rl = null;
 client.connect(1337, '127.0.0.1', () => {
     console.log('Connected');
 
-/*     var rl = readline.createInterface(
-        process.stdin, process.stdout);
-    rl.setPrompt(`Syötä tunnus:`);
-    rl.prompt()
+    rl = readline.createInterface(process.stdin, process.stdout);
 
-    rl.on('line', (tunnus) => {
-        client.write(tunnus)
-        rl.close();
-    }); */
+    rl.on('line', (teksti) => {
+        client.write(teksti)
+    });
+    rl.setPrompt(`>`);
+
 });
 
 client.on('error', (err) => {
@@ -22,25 +21,10 @@ client.on('error', (err) => {
 });
 
 client.on('data', (data) => {
-    console.log('Received: ' + data);
 
-    //lue komentoriviltä tekstiä ja lähetä se sockettiin. 
-    //    client.write (komentoriviltäluettudata)
+    console.log('--' + data);
 
-    var rl = readline.createInterface(
-        process.stdin, process.stdout);
-
-    rl.setPrompt(`>`);
     rl.prompt()
-
-    rl.on('line', (teksti) => {
-        //console.log(`teksti: ${teksti}`);
-        client.write(teksti)
-        rl.close();
-    });
-//    client.write("Viesti asiakkaalta")
-
-    //	client.destroy(); // kill client after server's response
 });
 
 client.on('close', () => {
