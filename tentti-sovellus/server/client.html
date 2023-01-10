@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<form name="publish">
+    <input type="text" name="message">
+    <input type="submit" value="Send">
+  </form>
+  
+  <!-- div with messages -->
+  <div id="messages"></div>
+
+<script>
+"use strict";
+
+let socket = new WebSocket("ws://localhost:8080");
+
+document.forms.publish.onsubmit = function() {
+  let outgoingMessage = this.message.value;
+  socket.send(outgoingMessage);
+  document.getElementsByName('message')[0].value = " ";
+  return false;
+};
+
+socket.onmessage = function(event) {
+  let message = event.data;
+
+  let messageElem = document.createElement('div');
+  messageElem.textContent = message;
+  document.getElementById('messages').prepend(messageElem);
+}
+
+/* socket.onopen = function(e) {
+  socket.send("My name is John");
+}; */
+
+/* socket.onmessage = function(event) {
+  alert(`[message] Data received from server: ${event.data}`);
+}; */
+
+socket.onclose = function(event) {
+  if (event.wasClean) {
+    alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+  } else {
+    // e.g. server process killed or network down
+    // event.code is usually 1006 in this case
+    alert('[close] Connection died');
+  }
+};
+
+socket.onerror = function(error) {
+  alert(`[error]`);
+};
+</script>
