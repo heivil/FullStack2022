@@ -5,6 +5,10 @@ const wss = new ws.Server({noServer: true});
 
 const clients = new Set();
 
+const kiroSanat = ["vittu", "perkele", "saatana", "kyrpä", "homo", "huora", "paska", "kusi", "jumalauta", "helvetti", "johanna tukiainen" ]
+
+const ulostautumisAika = 120000
+
 function accept(req, res) {
   // all incoming requests must be websockets
   if (!req.headers.upgrade || req.headers.upgrade.toLowerCase() != 'websocket') {
@@ -24,8 +28,82 @@ function accept(req, res) {
 function onConnect(ws) {
 	clients.add(ws);
 
+	const heitäUlos = () => {
+		clearTimeout(ws.ajastin);
+		for(let client of clients) {
+			client.send(`${ws.name} heitetään ulos.`);
+		}
+		ws.close();
+	}
+
+	ws.ajastin = setTimeout(heitäUlos, ulostautumisAika);
+
+	const nollaaPuheLaskuri = () => {
+		ws.puheLaskuri = 0;
+	}
+
+	const puhuuLiikaa = () => {
+		clearTimeout(ws.puhuuLiikaaAjastin);
+		for(let client of clients) {
+			client.send(`${ws.name} heitetään ulos koska hän puhuu liikaa.`);
+		}
+		ws.close();
+	}
+
+
+	ws.puhuuLiikaaAjastin = setTimeout(nollaaPuheLaskuri, 1000);
+	ws.puheLaskuri = 0;
+
   ws.on('message', function (message) {
-    message = message.toString();
+		message = message.toString()
+		console.log(ws.name + " sanoo " + message)
+		//kirosanafiltteri
+		for(i = 0; i < kiroSanat.length; i++){
+			if(message.toLowerCase().includes(kiroSanat[i])){
+				ws.send('Eipä kiroilla');
+				heitäUlos()
+				return
+			}
+		}
+
+		//aloitetaan inaktiivisuusajastin alusta kun viestiä tulee
+		if(ws.ajastin) {
+			clearTimeout(ws.ajastin);
+			ws.ajastin = setTimeout(heitäUlos, ulostautumisAika);
+		}
+
+		//katsotaan puhuuko joku liikaa
+		clearTimeout(ws.puhuuLiikaaAjastin);
+		ws.puhuuLiikaaAjastin = setTimeout(nollaaPuheLaskuri, 1000);
+		ws.puheLaskuri++;
+		if (ws.puheLaskuri >= 10) {
+				puhuuLiikaa();
+				return;
+		}
+
+		//salaisella stringillä saa potkuoideuden
+		if(message === "Anna minulle potkuoikeudet pliis!"){
+			ws.kickAuth = true
+			ws.send("Potkuoikeus myönnetty.")
+			return;
+		}
+		
+		//yksityisviesti tai kickpyyntö
+		for(let client of clients){
+			if(ws.name !== undefined && message.startsWith("*" + client.name)){
+				console.log("heeeee")
+				client.send(ws.name + " lähetti yksityisviestin: " + message.replace("*" + client.name, ""))
+				ws.send("lähetit yksityisviestin käyttäjälle: " + client.name + " : " + message.replace("*" + client.name, ""))
+				return;
+			}	else if(ws.kickAuth === true && message.startsWith("KICK: " + client.name)){
+				for(let clnt of clients){
+					clnt.send(client.name + " heitetään ulos käyttäjän " + ws.name + " pyynnöstä")
+				}
+				client.close();	
+				return;
+			}
+		}
+
 		if(ws.name === undefined){
     	ws.name = message.match(/([\p{Alpha}\p{M}\p{Nd}\p{Pc}\p{Join_C}]+)$/gu) || "Guest";
 			for(let client of clients) {

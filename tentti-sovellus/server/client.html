@@ -16,7 +16,7 @@ let socket = new WebSocket("ws://localhost:8080");
 document.forms.publish.onsubmit = function() {
   let outgoingMessage = this.message.value;
   socket.send(outgoingMessage);
-  document.getElementsByName('message')[0].value = " ";
+  document.getElementsByName('message')[0].value = "";
   return false;
 };
 
