@@ -50,7 +50,6 @@ function onConnect(ws) {
 		ws.close();
 	}
 
-
 	ws.puhuuLiikaaAjastin = setTimeout(nollaaPuheLaskuri, 1000);
 	ws.puheLaskuri = 0;
 

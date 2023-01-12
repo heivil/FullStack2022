@@ -13,24 +13,47 @@ const vastaukset = require("./Komennot/Vastaukset");
 const käyttäjät = require("./Komennot/Käyttäjät");
 const https = require("https");
 //const nodemailer = require('nodemailer');
+const ws = require('ws');
 
 app.use(cors());
 app.use(express.json());
 /* app.use(bodyparser.urlencoded({extended:false}))
 app.use(bodyparser.json()) */
 
-
-https.createServer(
-  // Provide the private and public key to the server by reading each
-  // file's content with the readFileSync() method.
-  {
+const https_Server = https.createServer({
+    // Provide the private and public key to the server by reading each
+    // file's content with the readFileSync() method.
     key: fs.readFileSync("key.pem"),
     cert: fs.readFileSync("cert.pem"),
   },
   app
-).listen(port, () => {
-  console.log(`Server is runing at port ${port}`);
-});
+).listen(port, () => {console.log(`Serveri kuuntelee poritlla ${port}`);});
+
+const wss = new ws.Server({server: https_Server});
+
+/* function accept(req, res) {
+  // all incoming requests must be websockets
+  if (!req.headers.upgrade || req.headers.upgrade.toLowerCase() != 'websocket') {
+    res.end();
+    return;
+  }
+
+  // can be Connection: keep-alive, Upgrade
+  if (!req.headers.connection.match(/\bupgrade\b/i)) {
+    res.end();
+    return;
+  }
+
+  wss.handleUpgrade(req, req.socket, Buffer.alloc(0), onConnect);
+}
+ */
+
+wss.on('connection', ws => {
+  console.log('Client connected.');
+  ws.send('Hi there!');
+})
+
+const clients = new Set();
 
 app.get('/testi', (req, res) => {
   res.send("testi")
@@ -100,6 +123,8 @@ app.put('/muutaVastaus/id/:id/vas_nimi/:vas_nimi/kysymys_id/:kysymys_id/pisteet/
 app.delete('/poistaVastaus/id/:id', (req, res) => {
   vastaukset.poistaVastaus(req, res)
 })
+
+
 
 /* app.post('/localStorage/token/:token/', (req, res) => {
   console.log("Local storageen tallennetaan dataa", req)

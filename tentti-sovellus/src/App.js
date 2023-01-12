@@ -16,7 +16,7 @@ const App = () => {
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
     poistettuData: { tentit: [], kysymykset: [], vastaukset: [] },
-    käyttäjänVastaukset: [], näytäSuoritus: false , tenttiSuoritus: {läpi: false, pisteet: 0}, xmin:0
+    käyttäjänVastaukset: [], näytäSuoritus: false , tenttiSuoritus: {läpi: false, pisteet: 0}, xmin:0, socket:{}
   });
 
   const [ajastin, setAjastin] = useState()
@@ -35,8 +35,9 @@ const App = () => {
   useEffect(() => {
     const refreshToken = localStorage.getItem("refreshToken")
     const käyt = JSON.parse(localStorage.getItem("käyttäjä"))
+    let _socket = new WebSocket("wss://localhost:8080");
     if (refreshToken) {
-      dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: käyt.onko_admin } })
+      dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: käyt.onko_admin, soketti: _socket } })
       getData(käyt.tentti, refreshToken)
     }
   }, [])
