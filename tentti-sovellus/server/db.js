@@ -6,6 +6,7 @@ const pool = new Pool({
   database: 'TenttiDB',
   password: 'admin',
   port: 5432,
+  connectionString: 'postgres://postgres:admin@localhost:5432/TenttiDB'
 })
 
 module.exports = pool;

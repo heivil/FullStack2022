@@ -141,7 +141,7 @@ if (!module.parent) {
 
 
 
-
+//alla vanha, toimii SocketClientin kanssa
 
 /* var readline = require('readline');
 

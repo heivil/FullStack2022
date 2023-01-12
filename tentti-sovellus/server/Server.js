@@ -14,6 +14,7 @@ const käyttäjät = require("./Komennot/Käyttäjät");
 const https = require("https");
 //const nodemailer = require('nodemailer');
 const ws = require('ws');
+const pool = require("./db")
 
 app.use(cors());
 app.use(express.json());
@@ -21,39 +22,127 @@ app.use(express.json());
 app.use(bodyparser.json()) */
 
 const https_Server = https.createServer({
-    // Provide the private and public key to the server by reading each
-    // file's content with the readFileSync() method.
-    key: fs.readFileSync("key.pem"),
-    cert: fs.readFileSync("cert.pem"),
-  },
+  // Provide the private and public key to the server by reading each
+  // file's content with the readFileSync() method.
+  key: fs.readFileSync("key.pem"),
+  cert: fs.readFileSync("cert.pem"),
+},
   app
-).listen(port, () => {console.log(`Serveri kuuntelee poritlla ${port}`);});
+).listen(port, () => { console.log(`Serveri kuuntelee portilla ${port}`); });
 
-const wss = new ws.Server({server: https_Server});
+const wss = new ws.Server({ server: https_Server });
+const clients = new Set();
 
-/* function accept(req, res) {
-  // all incoming requests must be websockets
-  if (!req.headers.upgrade || req.headers.upgrade.toLowerCase() != 'websocket') {
-    res.end();
-    return;
-  }
+const EventEmitter = require('events');
+const util = require('util');
 
-  // can be Connection: keep-alive, Upgrade
-  if (!req.headers.connection.match(/\bupgrade\b/i)) {
-    res.end();
-    return;
-  }
-
-  wss.handleUpgrade(req, req.socket, Buffer.alloc(0), onConnect);
+// Luodaan EventEmitter
+function DbEventEmitter() {
+  EventEmitter.call(this);
 }
- */
+util.inherits(DbEventEmitter, EventEmitter);
+const dbEventEmitter = new DbEventEmitter;
 
-wss.on('connection', ws => {
-  console.log('Client connected.');
-  ws.send('Hi there!');
+dbEventEmitter.on('start', () => {
+  console.log('started event emitter');
+  for(let client of clients) {
+    client.send(`Tentti tauluun tuli muutos, päivitä sivu` + msg);
+  }
+});
+//testataan heti käynnistyessä että toimiiko event emitter
+dbEventEmitter.emit('start');
+
+dbEventEmitter.on('notification', () => {
+  console.log("notification tuli")
+  for(let client of clients) {
+    client.send(`testing` );
+  }
 })
 
-const clients = new Set();
+dbEventEmitter.on('channelName', (msg) => {
+  console.log("tentissä muutoksia kannassa")
+
+  for(let client of clients) {
+    client.send(`Tentti tauluun tuli muutos, päivitä sivu` + msg);
+  }
+});
+
+// Yhteys kantaan
+pool.connect(async (err, client, done) => {
+    console.log("yhteys pooliin")
+  if (err) {
+    console.log("errori: "+ err); 
+  }
+  try{
+    await pool.query(`CREATE OR REPLACE FUNCTION notify_update() RETURNS trigger AS $BODY$ BEGIN PERFORM pg_notify('channelName', row_to_json(NEW)::text); RETURN NULL; END; $BODY$ LANGUAGE plpgsql VOLATILE COST 100;`)
+    await pool.query(`CREATE OR REPLACE TRIGGER notify_update AFTER UPDATE ON "tentti" FOR EACH ROW EXECUTE PROCEDURE notify_update();`)
+    //await pool.query(`DROP TRIGGER notifyUpdate ON tentti`)
+    console.log("DB funktio ja trigger")
+  }catch(err){
+    console.log(err)
+  }  
+  // Kuunnellaan muutoksia
+
+  client.on('error', (e) => {
+    console.log("errrrrrorrrrr")
+  })
+
+  client.on('notification', (msg) => {
+    console.log("notification")
+    let payload = JSON.parse(msg.payload);
+    dbEventEmitter.emit(msg.channel, payload);
+  });
+
+  client.on('connection', () => {
+    console.log("mmmv b")
+  })
+  // Kuunnellaan muutoksia mahdollisesti usealta kanavalta
+  client.query('LISTEN channelName');
+});
+
+wss.on('connection', ws => {
+  clients.add(ws);
+  console.log('Client connected.');
+  ws.send('Hello there from the server!');
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.get('/testi', (req, res) => {
   res.send("testi")
@@ -68,13 +157,13 @@ app.post('/kirjaudu/tunnus/:tunnus/salasana/:salasana', (req, res) => {
   login.kirjaudu(req, res)
 })
 
-app.use(login.verifoiToken) 
+app.use(login.verifoiToken)
 
-app.post('/tentti/id/:tentti_id', (req, res) => { 
+app.post('/tentti/id/:tentti_id', (req, res) => {
   tentit.lataaTenttiIdllä(req, res)
 })
 
-app.get('/tentit', (req, res) => { 
+app.get('/tentit', (req, res) => {
   tentit.lataaTentit(req, res)
 })
 
@@ -88,10 +177,10 @@ app.post('/lisaaTentti/nimi/:nimi', (req, res) => {
   tentit.lisääTentti(req, res)
 })
 
-app.put('/muutaTentti/id/:id/nimi/:ten_nimi/:xmin', (req, res) =>{
+app.put('/muutaTentti/id/:id/nimi/:ten_nimi/:xmin', (req, res) => {
   tentit.muutaTentti(req, res)
 })
- 
+
 app.delete('/poistaTentti/id/:id', (req, res) => {
   tentit.poistaTentti(req, res)
 })
@@ -104,7 +193,7 @@ app.post('/lisaaKysymys/kysymys/:kys_nimi/tentti/:tentti_id', (req, res) => {
   kysymykset.lisääKysymys(req, res)
 })
 
-app.put('/muutaKysymys/id/:id/kys_nimi/:kys_nimi/', (req, res) =>{
+app.put('/muutaKysymys/id/:id/kys_nimi/:kys_nimi/', (req, res) => {
   kysymykset.muutaKysymys(req, res)
 })
 
@@ -116,7 +205,7 @@ app.post('/lisaaVastaus/vastaus/:vas_nimi/kysymys_id/:kysymys_id/pisteet/:pistee
   vastaukset.lisääVastaus(req, res)
 })
 
-app.put('/muutaVastaus/id/:id/vas_nimi/:vas_nimi/kysymys_id/:kysymys_id/pisteet/:pisteet/onko_oikein/:onko_oikein', (req, res) =>{
+app.put('/muutaVastaus/id/:id/vas_nimi/:vas_nimi/kysymys_id/:kysymys_id/pisteet/:pisteet/onko_oikein/:onko_oikein', (req, res) => {
   vastaukset.muutaVastaus(req, res)
 })
 

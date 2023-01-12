@@ -16,7 +16,7 @@ const App = () => {
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
     poistettuData: { tentit: [], kysymykset: [], vastaukset: [] },
-    käyttäjänVastaukset: [], näytäSuoritus: false , tenttiSuoritus: {läpi: false, pisteet: 0}, xmin:0, socket:{}
+    käyttäjänVastaukset: [], näytäSuoritus: false , tenttiSuoritus: {läpi: false, pisteet: 0}, xmin:0, socket: new WebSocket("wss://localhost:8080")
   });
 
   const [ajastin, setAjastin] = useState()
@@ -35,9 +35,9 @@ const App = () => {
   useEffect(() => {
     const refreshToken = localStorage.getItem("refreshToken")
     const käyt = JSON.parse(localStorage.getItem("käyttäjä"))
-    let _socket = new WebSocket("wss://localhost:8080");
+    //let _socket = new WebSocket("wss://localhost:8080");
     if (refreshToken) {
-      dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: käyt.onko_admin, soketti: _socket } })
+      dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: käyt.onko_admin } })
       getData(käyt.tentti, refreshToken)
     }
   }, [])
@@ -184,6 +184,11 @@ const App = () => {
         console.log("Virhe alustaessa: ", error)
       }
     }
+  }
+
+  data.socket.onmessage = function(event) {
+    let message = event.data;
+    console.log("Serveriltä tuli viesti:  " + message)
   }
 
   const kirjauduSisään = async (käyttäjä) => {
