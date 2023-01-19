@@ -13,7 +13,7 @@ namespace cs_backend.Models
         public string ten_nimi { get; set; }
 
         //[Column(TypeName = "nvarchar(50)")]
-        public string? tentti_Pvm { get; set; }
+        public DateTime? tentti_pvm { get; set; }
 
         public int? min_pisteet { get; set; }
     }

@@ -13,6 +13,6 @@ namespace cs_backend.Models
         public string kys_nimi { get; set; }
 
         //[Column(TypeName = "nvarchar(50)")]
-        public string? tentti_id { get; set; }
+        public int? tentti_id { get; set; }
     }
 }

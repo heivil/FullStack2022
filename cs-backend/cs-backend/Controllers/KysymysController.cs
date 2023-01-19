@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cs_backend.Models;
+using System.Diagnostics;
 
 namespace cs_backend.Controllers
 {
@@ -77,6 +78,8 @@ namespace cs_backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Kysymys>> PostKysymys(Kysymys kysymys)
         {
+            //var temp = _context.kysymys.Where(x => x.id == kysymys.id);
+
             _context.kysymys.Add(kysymys);
             await _context.SaveChangesAsync();
 

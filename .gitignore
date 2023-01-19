@@ -105,3 +105,10 @@ dist
 
 # ssl salaus jutut
 *.pem
+
+# C#mitkälie
+*.dll
+*.pdb
+*.vsidx
+*.suo
+*.v2
