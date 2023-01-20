@@ -12,11 +12,11 @@ import eiLahjoja from './Joulukakka.png';
 const App = () => {
 
   const [data, dispatch] = useReducer(reducer.reducer, {
-    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: false, tenttiNäkymä: false, kirjauduRuutu: true, darkMode: false,
+    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: false, tenttiNäkymä: true, kirjauduRuutu: true, darkMode: false,
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
     poistettuData: { tentit: [], kysymykset: [], vastaukset: [] },
-    käyttäjänVastaukset: [], näytäSuoritus: false , tenttiSuoritus: {läpi: false, pisteet: 0}, xmin:0, socket: new WebSocket("wss://localhost:8080")
+    käyttäjänVastaukset: [], näytäSuoritus: false , tenttiSuoritus: {läpi: false, pisteet: 0}, xmin:0
   });
 
   const [ajastin, setAjastin] = useState()
@@ -37,8 +37,8 @@ const App = () => {
     const käyt = JSON.parse(localStorage.getItem("käyttäjä"))
     //let _socket = new WebSocket("wss://localhost:8080");
     if (refreshToken) {
-      dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: käyt.onko_admin } })
-      getData(käyt.tentti, refreshToken)
+      dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: true } })
+      getData(käyt.tentti)
     }
   }, [])
 
@@ -164,31 +164,19 @@ const App = () => {
   }
 
   const getData = async (tentti_id, rT) => {
-    if(rT !== undefined){
+    
       try {
-        const resTentti = await axios.post(`https://localhost:8080/tentti/id/${tentti_id}`, {refreshToken: rT});
-        axios.defaults.headers.common['Authorization'] = 'Bearer ' + resTentti.data.token;
-        const resTentit = await axios.get(`https://localhost:8080/tentit/`);
-        console.log("Alustus result:", resTentti.data.tentti, resTentit.data)
+        const resTentti = await axios.get(`http://localhost:5167/api/Tentti/${tentti_id}`,);
+        //axios.defaults.headers.common['Authorization'] = 'Bearer ' + resTentti.data.token;
+        const resTentit = await axios.get(`http://localhost:5167/api/Tentti/`);
+        const kysymykset = await axios.get(`http://localhost:5167/api/Kysymys/${tentti_id}`)
+        resTentti.data.kysymykset = kysymykset.data
+        console.log("Alustus result:", resTentti.data, resTentit.data)
         dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data.tentti, tentit: resTentit.data, xmin: resTentti.data.xmin} })
       } catch (error) {
         console.log("Virhe alustaessa: ", error)
       }
-    }else{
-      try {
-        const resTentti = await axios.post(`https://localhost:8080/tentti/id/${tentti_id}`);
-        const resTentit = await axios.get(`https://localhost:8080/tentit/`);
-        console.log("Alustus result:", resTentti.data, resTentit.data)
-        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data.tentti, tentit: resTentit.data, xmin: resTentti.data.xmin } })
-      } catch (error) {
-        console.log("Virhe alustaessa: ", error)
-      }
-    }
-  }
-
-  data.socket.onmessage = function(event) {
-    let message = event.data;
-    console.log("Serveriltä tuli viesti:  " + message)
+    
   }
 
   const kirjauduSisään = async (käyttäjä) => {

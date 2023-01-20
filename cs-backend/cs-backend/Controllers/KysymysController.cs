@@ -30,16 +30,9 @@ namespace cs_backend.Controllers
 
         // GET: api/Kysymys/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Kysymys>> GetKysymys(int id)
+        public async Task<ActionResult<IEnumerable<Kysymys>>> GetKysymys(int id)
         {
-            var kysymys = await _context.kysymys.FindAsync(id);
-
-            if (kysymys == null)
-            {
-                return NotFound();
-            }
-
-            return kysymys;
+            return await _context.kysymys.Where(x => x.tentti_id == id).ToListAsync();
         }
 
         // PUT: api/Kysymys/5

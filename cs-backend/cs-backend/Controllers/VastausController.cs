@@ -29,16 +29,9 @@ namespace cs_backend.Controllers
 
         // GET: api/Vastaus/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Vastaus>> GetVastaus(int id)
+        public async Task<ActionResult<IEnumerable<Vastaus>>> GetVastaus(int id)
         {
-            var vastaus = await _context.vastaus.FindAsync(id);
-
-            if (vastaus == null)
-            {
-                return NotFound();
-            }
-
-            return vastaus;
+            return await _context.vastaus.Where(x => x.kysymys_id == id).ToListAsync();
         }
 
         // PUT: api/Vastaus/5
