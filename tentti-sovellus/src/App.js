@@ -165,13 +165,44 @@ const App = () => {
 
   const getData = async (tentti_id, rT) => {
     
+      let tentti
+      let kyssärit
       try {
         const resTentti = await axios.get(`http://localhost:5167/api/Tentti/${tentti_id}`,);
         //axios.defaults.headers.common['Authorization'] = 'Bearer ' + resTentti.data.token;
         const resTentit = await axios.get(`http://localhost:5167/api/Tentti/`);
         const kysymykset = await axios.get(`http://localhost:5167/api/Kysymys/${tentti_id}`)
-        resTentti.data.kysymykset = kysymykset.data
-        console.log("Alustus result:", resTentti.data, resTentit.data)
+        const vastaukset = await axios.get(`http://localhost:5167/api/Vastaus/${tentti_id}`)
+        console.log("vastauksia ", vastaukset.data.length)
+        tentti = resTentti.data
+        kyssärit = kysymykset.data
+        let maxPisteet = 0
+        if(vastaukset.data.length > 0){
+          for(let i = 0; i < vastaukset.data.length; i++){
+            for(let j = 0; j < kyssärit.length; j++){
+              kyssärit[j].vastaukset === undefined && (kyssärit[j].vastaukset = [])
+              if(kyssärit[j].id === vastaukset.data[i].kysymys_id){
+                console.log("ts")
+                if(data.onko_admin == true){ 
+                  kyssärit[j].vastaukset.push(vastaukset.data[i])
+                }else {
+                  kyssärit[j].vastaukset.push({
+                    id: vastaukset.data[i].id,
+                    kysymys_id: vastaukset.data[i].kysymys_id,
+                    tentti_id: vastaukset.data[i].tentti_id,
+                    vas_nimi: vastaukset.data[i].vas_nimi
+                  })
+                }
+    
+                if(vastaukset.data[i].pisteet > 0) maxPisteet += vastaukset.data[i].pisteet
+              }
+            }
+          } 
+        }
+        tentti.kysymykset = kyssärit
+        tentti.maxPisteet = maxPisteet
+        tentti.minPisteet = maxPisteet/2
+        console.log("Alustus result:", resTentti.data, resTentit.data, kysymykset.data, vastaukset.data)
         dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data.tentti, tentit: resTentit.data, xmin: resTentti.data.xmin} })
       } catch (error) {
         console.log("Virhe alustaessa: ", error)

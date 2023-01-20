@@ -31,7 +31,22 @@ namespace cs_backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<IEnumerable<Vastaus>>> GetVastaus(int id)
         {
-            return await _context.vastaus.Where(x => x.kysymys_id == id).ToListAsync();
+            return await _context.vastaus.Join(_context.kysymys, vast => vast.kysymys_id, kys => kys.id, (vast, kys) => new {
+                id = vast.id,
+                kysymys_id = vast.kysymys_id,
+                vas_nimi = vast.vas_nimi,
+                pisteet = vast.pisteet,
+                onko_oikein = vast.onko_oikein,
+                tentti = kys.tentti_id
+            }).Where(x => x.tentti == id).Select(x => new Vastaus()
+                {
+                id = x.id,
+                kysymys_id = x.id,
+                vas_nimi = x.vas_nimi,
+                pisteet = x.pisteet,
+                onko_oikein = x.onko_oikein
+            }).
+            ToListAsync();
         }
 
         // PUT: api/Vastaus/5
