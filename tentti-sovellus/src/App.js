@@ -12,7 +12,7 @@ import eiLahjoja from './Joulukakka.png';
 const App = () => {
 
   const [data, dispatch] = useReducer(reducer.reducer, {
-    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: false, tenttiNäkymä: true, kirjauduRuutu: true, darkMode: false,
+    tentit: {}, tentti: {}, tallennetaanko: false, opettajaMoodi: true, tenttiNäkymä: true, kirjauduRuutu: false, darkMode: false,
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
     poistettuData: { tentit: [], kysymykset: [], vastaukset: [] },
@@ -33,13 +33,14 @@ const App = () => {
   }
 
   useEffect(() => {
-    const refreshToken = localStorage.getItem("refreshToken")
+    /* const refreshToken = localStorage.getItem("refreshToken")
     const käyt = JSON.parse(localStorage.getItem("käyttäjä"))
     //let _socket = new WebSocket("wss://localhost:8080");
     if (refreshToken) {
       dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: true } })
       getData(käyt.tentti)
-    }
+    } */
+    getData(1)
   }, [])
 
   useEffect(() => {
@@ -177,12 +178,13 @@ const App = () => {
         tentti = resTentti.data
         kyssärit = kysymykset.data
         let maxPisteet = 0
+
+        //vastaus.id ja vastaus.kysymys_id tulee samana tietokannasta, eli ei toimi
         if(vastaukset.data.length > 0){
           for(let i = 0; i < vastaukset.data.length; i++){
             for(let j = 0; j < kyssärit.length; j++){
               kyssärit[j].vastaukset === undefined && (kyssärit[j].vastaukset = [])
               if(kyssärit[j].id === vastaukset.data[i].kysymys_id){
-                console.log("ts")
                 if(data.onko_admin == true){ 
                   kyssärit[j].vastaukset.push(vastaukset.data[i])
                 }else {
@@ -202,8 +204,12 @@ const App = () => {
         tentti.kysymykset = kyssärit
         tentti.maxPisteet = maxPisteet
         tentti.minPisteet = maxPisteet/2
+        const tentit = {
+          tenttejä: resTentit.data.length,
+          tenttiLista: resTentit.data
+        } 
         console.log("Alustus result:", resTentti.data, resTentit.data, kysymykset.data, vastaukset.data)
-        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: resTentti.data.tentti, tentit: resTentit.data, xmin: resTentti.data.xmin} })
+        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: tentti, tentit: tentit, xmin: resTentti.data.xmin} })
       } catch (error) {
         console.log("Virhe alustaessa: ", error)
       }

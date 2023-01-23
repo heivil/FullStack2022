@@ -41,7 +41,7 @@ namespace cs_backend.Controllers
             }).Where(x => x.tentti == id).Select(x => new Vastaus()
                 {
                 id = x.id,
-                kysymys_id = x.id,
+                kysymys_id = x.kysymys_id,
                 vas_nimi = x.vas_nimi,
                 pisteet = x.pisteet,
                 onko_oikein = x.onko_oikein
