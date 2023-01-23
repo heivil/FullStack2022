@@ -23,7 +23,7 @@ const App = () => {
 
   function ajoitettuVaroitus() {
     clearTimeout(ajastin)
-    !data.kirjauduRuutu && data.opettajaMoodi && setAjastin(setTimeout(function () { alert("Hälytys, tallenna välillä."); }, 6000));
+    !data.kirjauduRuutu && data.opettajaMoodi && setAjastin(setTimeout(function () { alert("Hälytys, tallenna välillä."); }, 60000));
     //TODO:laita tallentamaan tässä suoraan?
   }
 
@@ -105,12 +105,16 @@ const App = () => {
     if (muutettu.tentit.length > 0) {
       for (let i = 0; i < muutettu.tentit.length; i++) {
         try{
-          const result = await axios.put(`https://localhost:8080/muutaTentti/id/${muutettu.tentit[i].id}/nimi/${muutettu.tentit[i].ten_nimi}/${data.xmin}`)
-          if(result.status === 205){
+          await axios.put(`http://localhost:5167/api/Tentti/${muutettu.tentit[i].id}`, {
+            id: muutettu.tentit[i].id,
+            ten_nimi: muutettu.tentit[i].ten_nimi,
+            tentti_pvm: "2023-01-23T15:42:09.983Z" // päivämäärä bugaa jos ottaa objektista
+          })
+          /* if(result.status === 205){
             if (window.confirm("Joku muu on jo tehnyt muutoksia tähän tenttiin. Haluatko ladata sivun uudelleen päivitetyillä tiedoilla?")) {
               window.location.reload();
             }
-          }
+          } */
         }catch (err){
           console.log("errrrr", err)
         }
@@ -119,7 +123,7 @@ const App = () => {
 
     if (muutettu.kysymykset.length > 0) {
       for (let i = 0; i < muutettu.kysymykset.length; i++) {
-        await axios.put(`https://localhost:8080/muutaKysymys/id/${muutettu.kysymykset[i].id}/kys_nimi/${muutettu.kysymykset[i].kys_nimi}`)
+        await axios.put(`http://localhost:5167/api/Kysymys/${muutettu.kysymykset[i].id}`, muutettu.kysymykset[i])
       }
     }
 

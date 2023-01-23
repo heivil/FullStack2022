@@ -15,6 +15,6 @@ namespace cs_backend.Models
         //[Column(TypeName = "nvarchar(50)")]
         public DateTime? tentti_pvm { get; set; }
 
-        public int? min_pisteet { get; set; }
+        //public int? min_pisteet { get; set; }
     }
 }
