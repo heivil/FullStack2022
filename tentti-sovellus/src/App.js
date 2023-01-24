@@ -16,7 +16,7 @@ const App = () => {
     muutettuData: { tentit: [], kysymykset: [], vastaukset: [] },
     lisättyData: { tentit: [], kysymykset: [], vastaukset: [] },
     poistettuData: { tentit: [], kysymykset: [], vastaukset: [] },
-    käyttäjänVastaukset: [], näytäSuoritus: false , tenttiSuoritus: {läpi: false, pisteet: 0}, xmin:0
+    käyttäjänVastaukset: [], näytäSuoritus: false, tenttiSuoritus: { läpi: false, pisteet: 0 }, xmin: 0
   });
 
   const [ajastin, setAjastin] = useState()
@@ -64,10 +64,10 @@ const App = () => {
           console.log("Virhe tallennettaessa", err)
         }
       } else {
-        try{
+        try {
           console.log("Tenttisuoritus tallennetaan")
           tallennaTenttisuoritus()
-        }catch (err){
+        } catch (err) {
           console.log("Virhe tallennettaessa", err)
         }
       }
@@ -83,28 +83,31 @@ const App = () => {
     console.log("lis", lisätty, "muu", muutettu, "pois", poistettu)
     if (lisätty.tentit.length > 0) {
       for (let i = 0; i < lisätty.tentit.length; i++) {
-        await axios.post(`https://localhost:8080/lisaaTentti/nimi/${lisätty.tentit[i].ten_nimi}`)
+        await axios.post(`http://localhost:5167/api/Tentti/`, {
+          "id": 0,
+          "ten_nimi": lisätty.tentit[i].ten_nimi
+        })
         await getData(0) //koska tentti vasta lisättiin haetaan uusin tentti argumentilla 0
       }
     }
 
     if (lisätty.kysymykset.length > 0) {
       for (let i = 0; i < lisätty.kysymykset.length; i++) {
-        await axios.post(`https://localhost:8080/lisaaKysymys/kysymys/${lisätty.kysymykset[i].kys_nimi}/tentti/${lisätty.kysymykset[i].tentti_id}`)
+        await axios.post(`http://localhost:5167/api/Kysymys/`, lisätty.kysymykset[i])
       }
       await getData(data.tentti.id)
     }
 
     if (lisätty.vastaukset.length > 0) {
       for (let i = 0; i < lisätty.vastaukset.length; i++) {
-        await axios.post(`https://localhost:8080/lisaaVastaus/vastaus/${lisätty.vastaukset[i].vas_nimi}/kysymys_id/${lisätty.vastaukset[i].kysymys_id}/pisteet/${lisätty.vastaukset[i].pisteet}/onko_oikein/${lisätty.vastaukset[i].onko_oikein}`)
+        await axios.post(`http://localhost:5167/api/Vastaus/`, lisätty.vastaukset[i])
       }
       await getData(data.tentti.id)
     }
 
     if (muutettu.tentit.length > 0) {
       for (let i = 0; i < muutettu.tentit.length; i++) {
-        try{
+        try {
           await axios.put(`http://localhost:5167/api/Tentti/${muutettu.tentit[i].id}`, {
             id: muutettu.tentit[i].id,
             ten_nimi: muutettu.tentit[i].ten_nimi,
@@ -115,7 +118,7 @@ const App = () => {
               window.location.reload();
             }
           } */
-        }catch (err){
+        } catch (err) {
           console.log("errrrr", err)
         }
       }
@@ -129,25 +132,25 @@ const App = () => {
 
     if (muutettu.vastaukset.length > 0) {
       for (let i = 0; i < muutettu.vastaukset.length; i++) {
-        await axios.put(`https://localhost:8080/muutaVastaus/id/${muutettu.vastaukset[i].id}/vas_nimi/${muutettu.vastaukset[i].vas_nimi}/kysymys_id/${muutettu.vastaukset[i].kysymys_id}/pisteet/${muutettu.vastaukset[i].pisteet}/onko_oikein/${muutettu.vastaukset[i].onko_oikein}`)
+        await axios.put(`http://localhost:5167/api/Vastaus/${muutettu.vastaukset[i].id}`, muutettu.vastaukset[i])
       }
     }
 
     if (poistettu.kysymykset.length > 0) {
       for (let i = 0; i < poistettu.kysymykset.length; i++) {
-        await axios.delete(`https://localhost:8080/poistaKysymys/id/${poistettu.kysymykset[i].id}`)
+        await axios.delete(`http://localhost:5167/api/Kysymys/${poistettu.kysymykset[i].id}`)
       }
     }
 
     if (poistettu.vastaukset.length > 0) {
       for (let i = 0; i < poistettu.vastaukset.length; i++) {
-        await axios.delete(`https://localhost:8080/poistaVastaus/id/${poistettu.vastaukset[i].id}`)
+        await axios.delete(`http://localhost:5167/api/Vastaus/${poistettu.vastaukset[i].id}`)
       }
     }
 
     if (poistettu.tentit.length > 0) {
       for (let i = 0; i < poistettu.tentit.length; i++) {
-        await axios.delete(`https://localhost:8080/poistaTentti/id/${poistettu.tentit[i].id}`)
+        await axios.delete(`http://localhost:5167/api/Tentti/${poistettu.tentit[i].id}`)
         await getData(0) //koska tentti poistettiin, heataan uusin tentti argumentilla 0
       }
     }
@@ -160,22 +163,27 @@ const App = () => {
       pisteet: 0,
       min_pisteet: data.tentti.minPisteet
     }
-    try{
-      const result = await axios.post(`https://localhost:8080/tallennaSuoritus`, {data: JSON.stringify(suoritus)})
-      dispatch({type: 'NÄYTÄ_SUORITUS', payload: {pisteet: result.data.pisteet, läpi: result.data.läpi}})
-    }catch(err){
+    try {
+      const result = await axios.post(`https://localhost:8080/tallennaSuoritus`, { data: JSON.stringify(suoritus) })
+      dispatch({ type: 'NÄYTÄ_SUORITUS', payload: { pisteet: result.data.pisteet, läpi: result.data.läpi } })
+    } catch (err) {
       console.log(err)
     }
   }
 
   const getData = async (tentti_id, rT) => {
-    
-      let tentti
-      let kyssärit
-      try {
-        const resTentti = await axios.get(`http://localhost:5167/api/Tentti/${tentti_id}`,);
+
+    let tentti
+    let kyssärit
+    let resTentti
+    try {
+      const resTentit = await axios.get(`http://localhost:5167/api/Tentti/`);
+      if (tentti_id == 0) {
+        console.log("tentti numero nolla haettu sfdöjsfsjlfg")
+      } else {
+        resTentti = await axios.get(`http://localhost:5167/api/Tentti/${tentti_id}`,);
         //axios.defaults.headers.common['Authorization'] = 'Bearer ' + resTentti.data.token;
-        const resTentit = await axios.get(`http://localhost:5167/api/Tentti/`);
+
         const kysymykset = await axios.get(`http://localhost:5167/api/Kysymys/${tentti_id}`)
         const vastaukset = await axios.get(`http://localhost:5167/api/Vastaus/${tentti_id}`)
         console.log("vastauksia ", vastaukset.data.length)
@@ -184,40 +192,42 @@ const App = () => {
         let maxPisteet = 0
 
         //vastaus.id ja vastaus.kysymys_id tulee samana tietokannasta, eli ei toimi
-        if(vastaukset.data.length > 0){
-          for(let i = 0; i < vastaukset.data.length; i++){
-            for(let j = 0; j < kyssärit.length; j++){
+        if (vastaukset.data.length > 0) {
+          for (let i = 0; i < vastaukset.data.length; i++) {
+            for (let j = 0; j < kyssärit.length; j++) {
               kyssärit[j].vastaukset === undefined && (kyssärit[j].vastaukset = [])
-              if(kyssärit[j].id === vastaukset.data[i].kysymys_id){
-                if(data.onko_admin == true){ 
+              if (kyssärit[j].id === vastaukset.data[i].kysymys_id) {
+                if (data.onko_admin == true) {
                   kyssärit[j].vastaukset.push(vastaukset.data[i])
-                }else {
+                } else {
                   kyssärit[j].vastaukset.push({
                     id: vastaukset.data[i].id,
                     kysymys_id: vastaukset.data[i].kysymys_id,
-                    tentti_id: vastaukset.data[i].tentti_id,
+                    onko_oikein: vastaukset.data[i].onko_oikein,
                     vas_nimi: vastaukset.data[i].vas_nimi
                   })
                 }
-    
-                if(vastaukset.data[i].pisteet > 0) maxPisteet += vastaukset.data[i].pisteet
+
+                if (vastaukset.data[i].pisteet > 0) maxPisteet += vastaukset.data[i].pisteet
               }
             }
-          } 
+          }
         }
         tentti.kysymykset = kyssärit
         tentti.maxPisteet = maxPisteet
-        tentti.minPisteet = maxPisteet/2
+        tentti.minPisteet = maxPisteet / 2
+      }
         const tentit = {
           tenttejä: resTentit.data.length,
           tenttiLista: resTentit.data
-        } 
-        console.log("Alustus result:", resTentti.data, resTentit.data, kysymykset.data, vastaukset.data)
-        dispatch({ type: 'ALUSTA_DATA', payload: { tentti: tentti, tentit: tentit, xmin: resTentti.data.xmin} })
-      } catch (error) {
-        console.log("Virhe alustaessa: ", error)
-      }
-    
+        }
+      
+      console.log("Alustus result:", tentti)
+      dispatch({ type: 'ALUSTA_DATA', payload: { tentti: tentti, tentit: tentit, xmin: resTentti.data.xmin } })
+    } catch (error) {
+      console.log("Virhe alustaessa: ", error)
+    }
+
   }
 
   const kirjauduSisään = async (käyttäjä) => {
@@ -226,7 +236,7 @@ const App = () => {
       if (result) {
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + result.data.data.token;
         localStorage.setItem("refreshToken", result.data.data.refreshToken);
-        const käyt = {id: result.data.data.id, onko_admin: result.data.data.onko_admin, tentti: result.data.data.tentti_id }
+        const käyt = { id: result.data.data.id, onko_admin: result.data.data.onko_admin, tentti: result.data.data.tentti_id }
         localStorage.setItem("käyttäjä", JSON.stringify(käyt));
         dispatch({ type: 'VAIHDA_TENTTINÄKYMÄ', payload: { tenttiNäkymä: true, onko_admin: result.data.data.onko_admin } })
         console.log("kirjaudu result:", result.data)
@@ -299,13 +309,13 @@ const App = () => {
           <div> {data.tietoAlustettu && <Tentti tentti={data.tentti} moodi={data.opettajaMoodi} dispatch={dispatch} />} </div>
           {<button className='Nappi' onClick={() => { dispatch({ type: 'PÄIVITÄ_TALLENNUSTILA', payload: true }); lopetaAjastin() }}>Tallenna tiedot</button>}
         </div>}
-        {data.tenttiNäkymä && data.näytäSuoritus &&
+      {data.tenttiNäkymä && data.näytäSuoritus &&
         <div className='Main-content'>
           <div> {data.tentti.ten_nimi} </div>
           <div> pisteet: {data.tenttiSuoritus.pisteet} </div>
-          <div> 
-            {data.tenttiSuoritus.läpi && <> <div> Suoritus hyväksytty, lahjoja tulossa! </div> <img src={lahjoja} alt="lahjoja.png"/></>} 
-            {!data.tenttiSuoritus.läpi && <> <div> Suoritus hylätty, ei tule lahjoja! </div> <img src={eiLahjoja} alt="eiLahjoja.png"/> </>} 
+          <div>
+            {data.tenttiSuoritus.läpi && <> <div> Suoritus hyväksytty, lahjoja tulossa! </div> <img src={lahjoja} alt="lahjoja.png" /></>}
+            {!data.tenttiSuoritus.läpi && <> <div> Suoritus hylätty, ei tule lahjoja! </div> <img src={eiLahjoja} alt="eiLahjoja.png" /> </>}
           </div>
 
           {<button className='Nappi' onClick={() => { dispatch({ type: 'PÄIVITÄ_TALLENNUSTILA', payload: true }); lopetaAjastin() }}>Tallenna tiedot</button>}

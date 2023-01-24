@@ -8,7 +8,7 @@ function reducer(state, action) {
         if(action.payload.onko_oikein){
           dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].pisteet = 1
         }else{
-          dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].pisteet = -0.5
+          dataKopio.tentti.kysymykset[action.payload.kysymysIndex].vastaukset[action.payload.vastausIndex].pisteet = -1
         }
         //tarkistetaan onko muutettujen vastausten listalla jo sama vastaus, jos ei pushataan listaan, jos on niin muutetaan vain vas_nimi
         if (!dataKopio.muutettuData.vastaukset.some(vas => vas.id === action.payload.id)) {
