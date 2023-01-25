@@ -45,7 +45,7 @@ namespace cs_backend.Controllers
                 vas_nimi = x.vas_nimi,
                 pisteet = x.pisteet,
                 onko_oikein = x.onko_oikein
-            }).
+            }).OrderBy(x => x.id).
             ToListAsync();
         }
 

@@ -32,7 +32,7 @@ namespace cs_backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<IEnumerable<Kysymys>>> GetKysymys(int id)
         {
-            return await _context.kysymys.Where(x => x.tentti_id == id).ToListAsync();
+            return await _context.kysymys.Where(x => x.tentti_id == id).OrderBy(x => x.id).ToListAsync();
         }
 
         // PUT: api/Kysymys/5
@@ -83,6 +83,14 @@ namespace cs_backend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteKysymys(int id)
         {
+
+            var vastaukset = await _context.vastaus.Where(x => x.kysymys_id == id).ToListAsync();
+            if (vastaukset != null)
+            {
+                _context.vastaus.RemoveRange(vastaukset);
+                await _context.SaveChangesAsync();
+            }
+
             var kysymys = await _context.kysymys.FindAsync(id);
             if (kysymys == null)
             {
@@ -90,6 +98,7 @@ namespace cs_backend.Controllers
             }
 
             _context.kysymys.Remove(kysymys);
+            
             await _context.SaveChangesAsync();
 
             return NoContent();

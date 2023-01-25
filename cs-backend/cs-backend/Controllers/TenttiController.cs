@@ -87,6 +87,37 @@ namespace cs_backend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTentti(int id)
         {
+
+            var vastaukset = await _context.vastaus.Join(_context.kysymys, vast => vast.kysymys_id, kys => kys.id, (vast, kys) => new {
+                id = vast.id,
+                kysymys_id = vast.kysymys_id,
+                vas_nimi = vast.vas_nimi,
+                pisteet = vast.pisteet,
+                onko_oikein = vast.onko_oikein,
+                tentti = kys.tentti_id
+            }).Where(x => x.tentti == id).Select(x => new Vastaus()
+            {
+                id = x.id,
+                kysymys_id = x.kysymys_id,
+                vas_nimi = x.vas_nimi,
+                pisteet = x.pisteet,
+                onko_oikein = x.onko_oikein
+            }).
+            ToListAsync();
+
+            if (vastaukset != null)
+            {
+                _context.vastaus.RemoveRange(vastaukset);
+                await _context.SaveChangesAsync();
+            }
+
+            var kysymykset = await _context.kysymys.Where(x => x.tentti_id == id).ToListAsync();
+            if (kysymykset != null)
+            {
+                _context.kysymys.RemoveRange(kysymykset);
+                await _context.SaveChangesAsync();
+            }
+
             var tentti = await _context.tentti.FindAsync(id);
             if (tentti == null)
             {
