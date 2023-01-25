@@ -24,7 +24,7 @@ namespace cs_backend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Tentti>>> Gettentti()
         {
-            return await _context.tentti.ToListAsync();
+            return await _context.tentti.OrderBy(x => x.id).ToListAsync();
         }
 
         // GET: api/Tentti/5

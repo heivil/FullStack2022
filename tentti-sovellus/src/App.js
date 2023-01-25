@@ -85,7 +85,8 @@ const App = () => {
       for (let i = 0; i < lisätty.tentit.length; i++) {
         await axios.post(`http://localhost:5167/api/Tentti/`, {
           "id": 0,
-          "ten_nimi": lisätty.tentit[i].ten_nimi
+          "ten_nimi": lisätty.tentit[i].ten_nimi,
+          tentti_pvm: new Date().toISOString()
         })
         await getData(0) //koska tentti vasta lisättiin haetaan uusin tentti argumentilla 0
       }
@@ -111,7 +112,7 @@ const App = () => {
           await axios.put(`http://localhost:5167/api/Tentti/${muutettu.tentit[i].id}`, {
             id: muutettu.tentit[i].id,
             ten_nimi: muutettu.tentit[i].ten_nimi,
-            tentti_pvm: "2023-01-23T15:42:09.983Z" // päivämäärä bugaa jos ottaa objektista
+            tentti_pvm: new Date().toISOString()
           })
           /* if(result.status === 205){
             if (window.confirm("Joku muu on jo tehnyt muutoksia tähän tenttiin. Haluatko ladata sivun uudelleen päivitetyillä tiedoilla?")) {
@@ -171,56 +172,56 @@ const App = () => {
     }
   }
 
-  const getData = async (tentti_id, rT) => {
+  const getData = async (tentti_id/* , rT */) => {
 
     let tentti
     let kyssärit
-    let resTentti
     try {
       const resTentit = await axios.get(`http://localhost:5167/api/Tentti/`);
       if (tentti_id == 0) {
-        console.log("tentti numero nolla haettu sfdöjsfsjlfg")
-      } else {
-        resTentti = await axios.get(`http://localhost:5167/api/Tentti/${tentti_id}`,);
-        //axios.defaults.headers.common['Authorization'] = 'Bearer ' + resTentti.data.token;
+        tentti_id = resTentit.data[0].id
+        console.log("uusi id: "+tentti_id)
+      }
 
-        const kysymykset = await axios.get(`http://localhost:5167/api/Kysymys/${tentti_id}`)
-        const vastaukset = await axios.get(`http://localhost:5167/api/Vastaus/${tentti_id}`)
-        console.log("vastauksia ", vastaukset.data.length)
-        tentti = resTentti.data
-        kyssärit = kysymykset.data
-        let maxPisteet = 0
+      const resTentti = await axios.get(`http://localhost:5167/api/Tentti/${tentti_id}`);
+      //axios.defaults.headers.common['Authorization'] = 'Bearer ' + resTentti.data.token;
+      const kysymykset = await axios.get(`http://localhost:5167/api/Kysymys/${tentti_id}`)
+      const vastaukset = await axios.get(`http://localhost:5167/api/Vastaus/${tentti_id}`)
+      console.log("vastauksia ", vastaukset.data.length)
+      tentti = resTentti.data
+      kyssärit = kysymykset.data
+      let maxPisteet = 0
 
-        //vastaus.id ja vastaus.kysymys_id tulee samana tietokannasta, eli ei toimi
-        if (vastaukset.data.length > 0) {
-          for (let i = 0; i < vastaukset.data.length; i++) {
-            for (let j = 0; j < kyssärit.length; j++) {
-              kyssärit[j].vastaukset === undefined && (kyssärit[j].vastaukset = [])
-              if (kyssärit[j].id === vastaukset.data[i].kysymys_id) {
-                if (data.onko_admin == true) {
-                  kyssärit[j].vastaukset.push(vastaukset.data[i])
-                } else {
-                  kyssärit[j].vastaukset.push({
-                    id: vastaukset.data[i].id,
-                    kysymys_id: vastaukset.data[i].kysymys_id,
-                    onko_oikein: vastaukset.data[i].onko_oikein,
-                    vas_nimi: vastaukset.data[i].vas_nimi
-                  })
-                }
-
-                if (vastaukset.data[i].pisteet > 0) maxPisteet += vastaukset.data[i].pisteet
+      //vastaus.id ja vastaus.kysymys_id tulee samana tietokannasta, eli ei toimi
+      if (vastaukset.data.length > 0) {
+        for (let i = 0; i < vastaukset.data.length; i++) {
+          for (let j = 0; j < kyssärit.length; j++) {
+            kyssärit[j].vastaukset === undefined && (kyssärit[j].vastaukset = [])
+            if (kyssärit[j].id === vastaukset.data[i].kysymys_id) {
+              if (data.onko_admin == true) {
+                kyssärit[j].vastaukset.push(vastaukset.data[i])
+              } else {
+                kyssärit[j].vastaukset.push({
+                  id: vastaukset.data[i].id,
+                  kysymys_id: vastaukset.data[i].kysymys_id,
+                  onko_oikein: vastaukset.data[i].onko_oikein,
+                  vas_nimi: vastaukset.data[i].vas_nimi
+                })
               }
+
+              if (vastaukset.data[i].pisteet > 0) maxPisteet += vastaukset.data[i].pisteet
             }
           }
         }
-        tentti.kysymykset = kyssärit
-        tentti.maxPisteet = maxPisteet
-        tentti.minPisteet = maxPisteet / 2
       }
-        const tentit = {
-          tenttejä: resTentit.data.length,
-          tenttiLista: resTentit.data
-        }
+      tentti.kysymykset = kyssärit
+      tentti.maxPisteet = maxPisteet
+      tentti.minPisteet = maxPisteet / 2
+    
+      const tentit = {
+        tenttejä: resTentit.data.length,
+        tenttiLista: resTentit.data
+      }
       
       console.log("Alustus result:", tentti)
       dispatch({ type: 'ALUSTA_DATA', payload: { tentti: tentti, tentit: tentit, xmin: resTentti.data.xmin } })
